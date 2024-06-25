@@ -1,0 +1,21 @@
+# Schema for the Sandblasting-Condition dataset
+
+# Input feature columns
+features:
+  Angle of Sandblasting: float
+  Pressure of Sandblasting (bar): float
+  Temperture of Acid Etching: float
+  Time of Acid Etching (min): float
+  Voltage of Anodizing (v): float
+  Time of  Anodizing (min): float
+
+# Target columns
+targets:
+  Sa: float
+  Cell Viability (%): float
+
+# Additional metadata
+metadata:
+  validation_ranges:
+    Sa: [1.5, 2.5]      # Surface roughness: 1.5 to 2.5 micrometers
+    Cell Viability: 90  # Cell viability: 90% or higher
