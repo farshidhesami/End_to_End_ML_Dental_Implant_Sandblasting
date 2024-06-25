@@ -26,6 +26,7 @@
         "Temperture",
         "vmax",
         "vmin",
+        "xgboost",
         "xlabel",
         "ylabel"
     ]
