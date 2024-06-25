@@ -12,127 +12,129 @@ from Dental_Implant_Sandblasting import logger
 # Exception handling for empty or invalid YAML files
 @ensure_annotations
 def read_yaml(path_to_yaml: Path) -> ConfigBox:
-    """Reads a YAML file and returns its contents as a ConfigBox.
+    """reads yaml file and returns
 
     Args:
-        path_to_yaml (Path): Path to the YAML file.
+        path_to_yaml (str): path like input
 
     Raises:
-        ValueError: If the YAML file is empty.
-        e: Other exceptions related to file operations.
+        ValueError: if yaml file is empty
+        e: empty file
 
     Returns:
-        ConfigBox: Contents of the YAML file as a ConfigBox.
+        ConfigBox: ConfigBox type
     """
     try:
         with open(path_to_yaml) as yaml_file:
             content = yaml.safe_load(yaml_file)
-            logger.info(f"YAML file: {path_to_yaml} loaded successfully.")
+            logger.info(f"yaml file: {path_to_yaml} loaded successfully")
             return ConfigBox(content)
     except BoxValueError:
-        raise ValueError("YAML file is empty.")
+        raise ValueError("yaml file is empty")
     except Exception as e:
-        logger.error(f"Error loading YAML file: {e}")
         raise e
     
 
 # Creates each directory in the list, if it doesn't already exist
 @ensure_annotations
 def create_directories(path_to_directories: list, verbose=True):
-    """Create a list of directories if they don't exist.
+    """create list of directories
 
     Args:
-        path_to_directories (list): List of paths to directories.
-        verbose (bool, optional): If True, logs the creation of each directory. Defaults to True.
+        path_to_directories (list): list of path of directories
+        ignore_log (bool, optional): ignore if multiple dirs is to be created. Defaults to False.
     """
     for path in path_to_directories:
         os.makedirs(path, exist_ok=True)
         if verbose:
-            logger.info(f"Created directory at: {path}")
+            logger.info(f"created directory at: {path}")
 
 # Handles exceptions during JSON file writing
 @ensure_annotations
 def save_json(path: Path, data: dict):
-    """Save data to a JSON file.
+    """save json data
 
     Args:
-        path (Path): Path to the JSON file.
-        data (dict): Data to be saved in the JSON file.
+        path (Path): path to json file
+        data (dict): data to be saved in json file
     """
     try:
         with open(path, "w") as f:
             json.dump(data, f, indent=4)
-        logger.info(f"JSON file saved at: {path}")
+        logger.info(f"json file saved at: {path}")
     except Exception as e:
-        logger.error(f"Failed to save JSON file at: {path} with error: {e}")
+        logger.error(f"Failed to save json file at: {path} with error: {e}")
+
+
+
 
 # Exception handling for loading JSON files
 @ensure_annotations
 def load_json(path: Path) -> ConfigBox:
-    """Load data from a JSON file.
+    """load json files data
 
     Args:
-        path (Path): Path to the JSON file.
+        path (Path): path to json file
 
     Returns:
-        ConfigBox: Data from the JSON file as a ConfigBox.
+        ConfigBox: data as class attributes instead of dict
     """
     try:
         with open(path) as f:
             content = json.load(f)
-        logger.info(f"JSON file loaded successfully from: {path}")
+        logger.info(f"json file loaded successfully from: {path}")
         return ConfigBox(content)
     except Exception as e:
-        logger.error(f"Failed to load JSON file from: {path} with error: {e}")
+        logger.error(f"Failed to load json file from: {path} with error: {e}")
         return None
+
 
 # Saves any serializable data as a binary file
 @ensure_annotations
 def save_bin(data: Any, path: Path):
-    """Save data as a binary file.
+    """save binary file
 
     Args:
-        data (Any): Data to be saved as binary.
-        path (Path): Path to the binary file.
+        data (Any): data to be saved as binary
+        path (Path): path to binary file
     """
-    try:
-        joblib.dump(value=data, filename=path)
-        logger.info(f"Binary file saved at: {path}")
-    except Exception as e:
-        logger.error(f"Failed to save binary file at: {path} with error: {e}")
+    joblib.dump(value=data, filename=path)
+    logger.info(f"binary file saved at: {path}")
 
 # Handles exceptions during binary file loading
 @ensure_annotations
 def load_bin(path: Path) -> Any:
-    """Load data from a binary file.
+    """load binary data
 
     Args:
-        path (Path): Path to the binary file.
+        path (Path): path to binary file
 
     Returns:
-        Any: Object stored in the file.
+        Any: object stored in the file
     """
     try:
         data = joblib.load(path)
-        logger.info(f"Binary file loaded from: {path}")
+        logger.info(f"binary file loaded from: {path}")
         return data
     except Exception as e:
         logger.error(f"Failed to load binary file from: {path} with error: {e}")
         return None
 
+
+
 # Exception handling for getting file size
 @ensure_annotations
 def get_size(path: Path) -> str:
-    """Get the size of a file in KB.
+    """get size in KB
 
     Args:
-        path (Path): Path of the file.
+        path (Path): path of the file
 
     Returns:
-        str: Size in KB.
+        str: size in KB
     """
     try:
-        size_in_kb = round(os.path.getsize(path) / 1024)
+        size_in_kb = round(os.path.getsize(path)/1024)
         logger.info(f"Size of the file at: {path} is ~ {size_in_kb} KB")
         return f"~ {size_in_kb} KB"
     except Exception as e:
