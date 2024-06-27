@@ -11,7 +11,7 @@ features:
 
 # Target columns
 targets:
-  Sa: float
+  (Sa) Average of Surface roughness (micrometer): float
   Cell Viability (%): float
 
 # Additional metadata
