@@ -1,4 +1,4 @@
-from Dental_Implant_Sandblasting.constants import *
+from Dental_Implant_Sandblasting.constants import CONFIG_FILE_PATH, PARAMS_FILE_PATH, SCHEMA_FILE_PATH
 from Dental_Implant_Sandblasting.utils.common import read_yaml, create_directories
 from Dental_Implant_Sandblasting.entity.config_entity import DataIngestionConfig
 
