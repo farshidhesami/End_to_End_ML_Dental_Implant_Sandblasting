@@ -6,3 +6,12 @@ data_ingestion:
   source_URL: https://github.com/farshidhesami/Branching-tutorial/raw/master/Sandblasting-Condition.zip
   local_data_file: artifacts/data_ingestion/data.zip
   unzip_dir: artifacts/data_ingestion
+
+# root directory for data validation artifacts
+data_validation:
+  root_dir: artifacts/data_validation
+  unzip_data_dir: artifacts/data_ingestion/Sandblasting-Condition.csv
+  STATUS_FILE: artifacts/data_validation/status.txt
+
+
+
