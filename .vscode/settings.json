@@ -28,6 +28,7 @@
         "pairplot",
         "scatterplot",
         "Temperture",
+        "Valiadtion",
         "vmax",
         "vmin",
         "xgboost",
