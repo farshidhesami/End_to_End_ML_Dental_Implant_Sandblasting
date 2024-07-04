@@ -9,7 +9,7 @@ class DataIngestionConfig:
     source_URL: str
     local_data_file: Path
     unzip_dir: Path
-    
+
 
 @dataclass(frozen=True)              # This code copy from 02_data_validation.py
 class DataValidationConfig:

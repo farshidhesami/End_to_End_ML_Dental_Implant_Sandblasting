@@ -1,21 +1,37 @@
 # Schema for the Sandblasting-Condition dataset
 
-# Input feature columns
-features:
-  Angle of Sandblasting: float
-  Pressure of Sandblasting (bar): float
-  Temperture of Acid Etching: float
-  Time of Acid Etching (min): float
-  Voltage of Anodizing (v): float
-  Time of  Anodizing (min): float
+# X columns or feature columns:
+COLUMNS:
+  Angle of Sandblasting: int64
+  Pressure of Sandblasting (bar): int64
+  Temperture of Acid Etching: int64
+  Time of Acid Etching (min): int64
+  Voltage of Anodizing (v): int64
+  Time of Anodizing (min): int64
+  Angle of Sandblasting^2: float64
+  Angle of Sandblasting Pressure of Sandblasting (bar): float64
+  Angle of Sandblasting Temperture of Acid Etching: float64
+  Angle of Sandblasting Time of Acid Etching (min): float64
+  Angle of Sandblasting Voltage of Anodizing (v): float64
+  Angle of Sandblasting Time of Anodizing (min): float64
+  Pressure of Sandblasting (bar)^2: float64
+  Pressure of Sandblasting (bar) Temperture of Acid Etching: float64
+  Pressure of Sandblasting (bar) Time of Acid Etching (min): float64
+  Pressure of Sandblasting (bar) Voltage of Anodizing (v): float64
+  Pressure of Sandblasting (bar) Time of Anodizing (min): float64
+  Temperture of Acid Etching^2: float64
+  Temperture of Acid Etching Time of Acid Etching (min): float64
+  Temperture of Acid Etching Voltage of Anodizing (v): float64
+  Temperture of Acid Etching Time of Anodizing (min): float64
+  Time of Acid Etching (min)^2: float64
+  Time of Acid Etching (min) Voltage of Anodizing (v): float64
+  Time of Acid Etching (min) Time of Anodizing (min): float64
+  Voltage of Anodizing (v)^2: float64
+  Voltage of Anodizing (v) Time of Anodizing (min): float64
+  Time of Anodizing (min)^2: float64
 
-# Target columns
-targets:
-  (Sa) Average of Surface roughness (micrometer): float
-  Cell Viability (%): float
-
-# Additional metadata
-metadata:
-  validation_ranges:
-    Sa: [1.5, 2.5]      # Surface roughness: 1.5 to 2.5 micrometers
-    Cell Viability: 90  # Cell viability: 90% or higher
+# y columns or target columns:
+TARGET_COLUMNS:
+  (Sa) Average of Surface roughness (micrometer): float64
+  Cell Viability (%): int64
+  Result (1=Passed, 0=Failed): int64
