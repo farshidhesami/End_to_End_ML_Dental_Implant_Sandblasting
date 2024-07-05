@@ -12,7 +12,8 @@ class DataValidationTrainingPipeline:
         config = ConfigurationManager()
         data_validation_config = config.get_data_validation_config()
         data_validation = DataValidation(config=data_validation_config)
-        data_validation.validate_all_columns()
+        validation_status = data_validation.validate_all_columns()
+        logger.info(f"Validation status: {validation_status}")
 
 
 if __name__ == '__main__':
