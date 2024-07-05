@@ -27,6 +27,7 @@
         "overfitting",
         "pairplot",
         "scatterplot",
+        "suptitle",
         "Temperture",
         "Valiadtion",
         "vmax",
