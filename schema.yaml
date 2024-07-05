@@ -7,7 +7,7 @@ COLUMNS:
   Temperture of Acid Etching: int64
   Time of Acid Etching (min): int64
   Voltage of Anodizing (v): int64
-  Time of Anodizing (min): int64
+  Time of  Anodizing (min): int64
 
 # y columns or target columns:
 TARGET_COLUMNS:

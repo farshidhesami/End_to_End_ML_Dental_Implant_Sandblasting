@@ -1,4 +1,4 @@
-Angle of Sandblasting,Pressure of Sandblasting (bar),Temperture of Acid Etching,Time of Acid Etching (min),Voltage of Anodizing (v),Time of Anodizing (min),(Sa) Average of Surface roughness (micrometer),Cell Viability (%),"Result (1=Passed, 0=Failed)"
+Angle of Sandblasting,Pressure of Sandblasting (bar),Temperture of Acid Etching,Time of Acid Etching (min),Voltage of Anodizing (v),Time of  Anodizing (min),(Sa) Average of Surface roughness (micrometer),Cell Viability (%),"Result (1=Passed, 0=Failed)"
 30,3,25,3,80,1,0.746,0,0
 40,3,25,3,80,1,0.813,0,0
 50,3,25,3,80,1,0.952,0,0
