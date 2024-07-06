@@ -1,5 +1,5 @@
 from Dental_Implant_Sandblasting.config.configuration_manager import ConfigurationManager
-from Dental_Implant_Sandblasting.components.data_validation import DataValidation  # Ensure this is correct
+from Dental_Implant_Sandblasting.components.data_validation import DataValidation
 from Dental_Implant_Sandblasting import logger
 
 STAGE_NAME = "Data Validation stage"
