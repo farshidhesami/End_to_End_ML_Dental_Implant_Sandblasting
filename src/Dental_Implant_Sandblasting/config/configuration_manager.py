@@ -1,11 +1,11 @@
+from pathlib import Path
 from Dental_Implant_Sandblasting.constants import CONFIG_FILE_PATH, PARAMS_FILE_PATH, SCHEMA_FILE_PATH
 from Dental_Implant_Sandblasting.utils.common import read_yaml, create_directories
-from Dental_Implant_Sandblasting.entity.config_entity import (DataIngestionConfig,
-                                                              DataValidationConfig)
+from Dental_Implant_Sandblasting.entity.config_entity import(DataIngestionConfig,
+                                                              DataValidationConfig,
+                                                              DataTransformationConfig,
+                                                              )
 
-
-# Configuration Manager class to read the configuration files and return the configuration objects (data ingestion config)
-# The ConfigurationManager class will have the following methods:
 class ConfigurationManager:
     def __init__(
         self,
@@ -25,17 +25,13 @@ class ConfigurationManager:
 # get_data_ingestion_config() method to return the data ingestion config object
     def get_data_ingestion_config(self) -> DataIngestionConfig:
         config = self.config.data_ingestion
-
         create_directories([config.root_dir])
-
-        # DataIngestionConfig object to be returned by the get_data_ingestion_config() method
         data_ingestion_config = DataIngestionConfig(
             root_dir=config.root_dir,
             source_URL=config.source_URL,
             local_data_file=config.local_data_file,
             unzip_dir=config.unzip_dir
         )
-
         return data_ingestion_config
 
 
@@ -53,3 +49,22 @@ class ConfigurationManager:
             all_schema=schema,
         )
         return data_validation_config
+
+# get_data_Transformation_config() method to return the data Transformation config .
+    def get_data_transformation_config(self) -> DataTransformationConfig:
+        config = self.config.data_transformation
+        params = self.params.data_transformation
+        create_directories([config.root_dir])
+        data_transformation_config = DataTransformationConfig(
+            root_dir=Path(config.root_dir),
+            data_path=Path(config.data_path),
+            transformed_train_dir=Path(config.root_dir) / "train.csv",
+            transformed_test_dir=Path(config.root_dir) / "test.csv",
+            test_size=params['test_size'],
+            random_state=params['random_state'],
+            polynomial_features_degree=params['polynomial_features_degree'],
+            scaling_method=params['scaling_method']
+        )
+        return data_transformation_config
+
+
