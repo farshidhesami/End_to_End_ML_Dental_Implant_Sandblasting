@@ -6,6 +6,13 @@ data_preprocessing:
 feature_engineering:
   polynomial_degree: 2
 
+# Parameters for data transformation
+data_transformation:
+  test_size: 0.2
+  random_state: 42
+  polynomial_features_degree: 2
+  scaling_method: "StandardScaler"
+
 # Parameters for model training
 model_training:
   test_size: 0.2

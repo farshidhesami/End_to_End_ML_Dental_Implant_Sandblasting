@@ -12,3 +12,10 @@ data_validation:
   root_dir: artifacts/data_validation
   unzip_data_dir: artifacts/data_ingestion/Sandblasting-Condition.csv
   STATUS_FILE: artifacts/data_validation/status.txt
+
+# root directory for data transformation artifacts
+data_transformation:
+  root_dir: artifacts/data_transformation
+  data_path: artifacts/data_ingestion/Sandblasting-Condition.csv
+  transformed_train_path: artifacts/data_transformation/train.csv
+  transformed_test_path: artifacts/data_transformation/test.csv
