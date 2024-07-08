@@ -26,6 +26,7 @@ model_training:
     bayesian_ridge: {}
     huber_regressor:
       epsilon: 1.1
+  target_column: 'Result (1=Passed, 0=Failed)'
 
 # Parameters for hyperparameter tuning
 hyperparameter_tuning:
