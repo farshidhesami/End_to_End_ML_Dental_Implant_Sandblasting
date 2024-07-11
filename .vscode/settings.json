@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
         "annot",
+        "astype",
         "axvline",
         "barplot",
         "biocompatibility",
@@ -8,11 +9,14 @@
         "cmap",
         "coolwarm",
         "countplot",
+        "dtype",
         "elasticnet",
         "farshidhesami",
         "figsize",
+        "gradientboosting",
         "histplot",
         "hlines",
+        "huberregressor",
         "hyperparameters",
         "idxmin",
         "importances",
@@ -26,6 +30,7 @@
         "osseointegration",
         "overfitting",
         "pairplot",
+        "randomforest",
         "scatterplot",
         "suptitle",
         "Temperture",
@@ -33,6 +38,7 @@
         "vmax",
         "vmin",
         "xgboost",
+        "xgbregressor",
         "xlabel",
         "ylabel"
     ]
