@@ -21,6 +21,7 @@
         "idxmin",
         "importances",
         "ipynb",
+        "isin",
         "joblib",
         "levelname",
         "linestyle",
@@ -30,6 +31,8 @@
         "osseointegration",
         "overfitting",
         "pairplot",
+        "pbounds",
+        "quantile",
         "randomforest",
         "scatterplot",
         "suptitle",
@@ -40,6 +43,7 @@
         "xgboost",
         "xgbregressor",
         "xlabel",
+        "xticks",
         "ylabel"
     ]
 }
