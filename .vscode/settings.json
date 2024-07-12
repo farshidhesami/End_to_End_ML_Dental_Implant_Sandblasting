@@ -2,11 +2,13 @@
     "cSpell.words": [
         "annot",
         "astype",
+        "axhline",
         "axvline",
         "barplot",
         "biocompatibility",
         "Boxplot",
         "cmap",
+        "colorbar",
         "coolwarm",
         "countplot",
         "dtype",
