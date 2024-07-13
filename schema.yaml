@@ -1,6 +1,5 @@
 # Schema for the Sandblasting-Condition dataset
 
-# X columns or feature columns:
 COLUMNS:
   Angle of Sandblasting: int64
   Pressure of Sandblasting (bar): int64
@@ -9,7 +8,6 @@ COLUMNS:
   Voltage of Anodizing (v): int64
   Time of  Anodizing (min): int64
 
-# y columns or target columns:
 TARGET_COLUMNS:
   (Sa) Average of Surface roughness (micrometer): float64
   Cell Viability (%): int64
