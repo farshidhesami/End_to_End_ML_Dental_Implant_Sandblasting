@@ -26,5 +26,3 @@ class DataTransformationConfig:
     random_state: int
     polynomial_features_degree: int
     scaling_method: str
-
-

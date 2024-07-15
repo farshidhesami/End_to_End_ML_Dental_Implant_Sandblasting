@@ -40,8 +40,8 @@ class ConfigurationManager:
         data_transformation_config = DataTransformationConfig(
             root_dir=Path(config.root_dir),
             data_path=Path(config.data_path),
-            transformed_train_dir=Path(config.root_dir) / "train.csv",
-            transformed_test_dir=Path(config.root_dir) / "test.csv",
+            transformed_train_dir=Path(config.transformed_train_path),
+            transformed_test_dir=Path(config.transformed_test_path),
             test_size=params['test_size'],
             random_state=params['random_state'],
             polynomial_features_degree=params['polynomial_features_degree'],

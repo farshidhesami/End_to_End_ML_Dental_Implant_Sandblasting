@@ -26,7 +26,7 @@ model_training:
     bayesian_ridge: {}
     huber_regressor:
       epsilon: 1.1
-      max_iter: 1000
+      max_iter: 5000
   target_column: 'Result (1=Passed, 0=Failed)'
 
 # Parameters for hyperparameter tuning
@@ -36,7 +36,7 @@ hyperparameter_tuning:
   random_forest:
     param_grid:
       n_estimators: [50, 100, 200]
-      max_depth: [null, 10, 20, 30]  # Use null for None
+      max_depth: [null, 10, 20, 30]
       min_samples_split: [2, 5, 10]
       min_samples_leaf: [1, 2, 4]
   gradient_boosting:
@@ -52,9 +52,9 @@ hyperparameter_tuning:
     param_grid:
       alpha: [0.1, 1, 10]
       l1_ratio: [0.1, 0.5, 0.9]
-  huber:
+  huber_regressor:
     param_grid:
-      epsilon: [1.1, 35, 1.5, 1.75]
+      epsilon: [1.1, 1.35, 1.5, 1.75]
   svr:
     param_grid:
       C: [0.1, 1, 10]
