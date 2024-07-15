@@ -35,6 +35,7 @@
         "overfitting",
         "pairplot",
         "pbounds",
+        "prefit",
         "quantile",
         "randomforest",
         "scatterplot",
