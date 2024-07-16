@@ -66,3 +66,11 @@ hyperparameter_tuning:
       learning_rate: [0.01, 0.1, 0.2]
       max_depth: [3, 5, 7]
       subsample: [0.8, 0.9, 1.0]
+
+# Parameters for model evaluation
+model_evaluation:
+  root_dir: artifacts/model_evaluation
+  test_data_path: artifacts/data_transformation/test.csv
+  model_path: artifacts/model_trainer/model.joblib
+  metric_file_name: artifacts/model_evaluation/metrics.json
+  target_column: 'Result (1=Passed, 0=Failed)'
