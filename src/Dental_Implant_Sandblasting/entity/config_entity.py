@@ -2,14 +2,14 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-@dataclass(frozen=True)             # from 01_data_ingestion.py
+@dataclass(frozen=True)
 class DataIngestionConfig:
     root_dir: Path
     source_URL: str
     local_data_file: Path
     unzip_dir: Path
 
-@dataclass(frozen=True)              # from 02_data_validation.py
+@dataclass(frozen=True)
 class DataValidationConfig:
     root_dir: Path
     STATUS_FILE: str
@@ -26,3 +26,18 @@ class DataTransformationConfig:
     random_state: int
     polynomial_features_degree: int
     scaling_method: str
+
+@dataclass(frozen=True)
+class ModelTrainerConfig:
+    root_dir: Path
+    train_data_path: Path
+    test_data_path: Path
+    test_size: float
+    random_state: int
+    models: dict
+    param_grids: dict
+    alpha: float
+    l1_ratio: float
+    target_column: str
+    cv: int
+    scoring: str
