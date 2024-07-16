@@ -90,7 +90,21 @@ class DataTransformation:
         print(test_data.shape)
 
     def execute(self):
-        data = self.load_data()
-        preprocessed_data = self.preprocess_data(data)
-        features, targets = self.feature_engineering(preprocessed_data)
-        self.train_test_splitting(features, targets)
+        try:
+            data = self.load_data()
+            preprocessed_data = self.preprocess_data(data)
+            features, targets = self.feature_engineering(preprocessed_data)
+            self.train_test_splitting(features, targets)
+
+            # Create status file
+            with open(self.config.root_dir / "status.txt", "w") as f:
+                f.write("Validation status: True")
+
+            logger.info("Data transformation and splitting completed successfully.")
+        except Exception as e:
+            # Create status file with failure status
+            with open(self.config.root_dir / "status.txt", "w") as f:
+                f.write("Validation status: False")
+
+            logger.exception(e)
+            raise e
