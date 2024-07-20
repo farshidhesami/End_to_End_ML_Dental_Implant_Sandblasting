@@ -22,8 +22,8 @@ model_training:
     huber_regressor:
       alpha: 0.0001
       epsilon: 1.35
-      max_iter: 5000  # Further increased max_iter
-      tol: 0.000001  # Adjusted tolerance to lower value
+      max_iter: 10000  # Increased max_iter
+      tol: 0.000001
       warm_start: False
     random_forest:
       n_estimators: 50
@@ -61,7 +61,7 @@ hyperparameter_tuning:
     param_grid:
       alpha: [0.0001, 0.001, 0.01]
       epsilon: [1.35, 1.5, 1.75]
-      max_iter: [1000, 2000, 5000]  # Ensure increased max_iter is also here
+      max_iter: [1000, 2000, 5000, 10000]  # Ensure increased max_iter is also here
       tol: [0.000001, 0.00001]  # Ensure adjusted tolerance is also here
   svr:
     param_grid:
@@ -71,7 +71,7 @@ hyperparameter_tuning:
   random_forest:
     param_grid:
       n_estimators: [50, 100, 200]
-      max_depth: [10, 20, None]
+      max_depth: [10, 20, null]  # Replace 'None' with null
       min_samples_split: [2, 5, 10]
       min_samples_leaf: [1, 2, 4]
   gradient_boosting:
