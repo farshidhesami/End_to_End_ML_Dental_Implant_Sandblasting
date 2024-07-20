@@ -3,40 +3,75 @@ data_preprocessing:
   imputation_strategy: "mean"
 
 # Parameters for feature engineering
-feature_engineering:
-  polynomial_degree: 2
-
-# Parameters for data transformation
 data_transformation:
-  test_size: 0.2
-  random_state: 42
   polynomial_features_degree: 2
   scaling_method: "StandardScaler"
+  test_size: 0.2
+  random_state: 42
 
 # Parameters for model training
 model_training:
-  test_size: 0.2
-  random_state: 42
+  target_column: 'Result (1=Passed, 0=Failed)'
   models:
     ridge:
-      alpha: 0.1
+      alpha: 100.0
     elasticnet:
       alpha: 0.1
-      l1_ratio: 0.1
+      l1_ratio: 0.5
     bayesian_ridge: {}
     huber_regressor:
-      epsilon: 1.1
-      max_iter: 5000
-  target_column: 'Result (1=Passed, 0=Failed)'
+      alpha: 0.0001
+      epsilon: 1.35
+      max_iter: 5000  # Further increased max_iter
+      tol: 0.000001  # Adjusted tolerance to lower value
+      warm_start: False
+    random_forest:
+      n_estimators: 50
+      max_depth: 10
+      min_samples_leaf: 1
+      min_samples_split: 10
+      random_state: 42
+    gradient_boosting:
+      n_estimators: 50
+      learning_rate: 0.2
+      max_depth: 7
+    svr:
+      C: 0.1
+      epsilon: 0.01
+      kernel: "rbf"
+    xgboost:
+      objective: 'reg:squarederror'
+      n_estimators: 200
+      learning_rate: 0.1
+      max_depth: 5
+      subsample: 1.0
 
 # Parameters for hyperparameter tuning
 hyperparameter_tuning:
   cv: 5
   scoring: "neg_mean_absolute_error"
+  ridge:
+    param_grid:
+      alpha: [0.1, 1.0, 10.0, 100.0]
+  elasticnet:
+    param_grid:
+      alpha: [0.1, 1.0, 10.0]
+      l1_ratio: [0.1, 0.5, 0.9]
+  huber_regressor:
+    param_grid:
+      alpha: [0.0001, 0.001, 0.01]
+      epsilon: [1.35, 1.5, 1.75]
+      max_iter: [1000, 2000, 5000]  # Ensure increased max_iter is also here
+      tol: [0.000001, 0.00001]  # Ensure adjusted tolerance is also here
+  svr:
+    param_grid:
+      C: [0.1, 1.0, 10.0]
+      epsilon: [0.01, 0.1, 1.0]
+      kernel: ["linear", "rbf"]
   random_forest:
     param_grid:
       n_estimators: [50, 100, 200]
-      max_depth: [null, 10, 20, 30]
+      max_depth: [10, 20, None]
       min_samples_split: [2, 5, 10]
       min_samples_leaf: [1, 2, 4]
   gradient_boosting:
@@ -44,33 +79,8 @@ hyperparameter_tuning:
       n_estimators: [50, 100, 200]
       learning_rate: [0.01, 0.1, 0.2]
       max_depth: [3, 5, 7]
-      subsample: [0.8, 0.9, 1.0]
-  ridge:
-    param_grid:
-      alpha: [0.1, 1, 10, 100]
-  elasticnet:
-    param_grid:
-      alpha: [0.1, 1, 10]
-      l1_ratio: [0.1, 0.5, 0.9]
-  huber_regressor:
-    param_grid:
-      epsilon: [1.1, 1.35, 1.5, 1.75]
-  svr:
-    param_grid:
-      C: [0.1, 1, 10]
-      epsilon: [0.01, 0.1, 0.2]
-      kernel: ['linear', 'rbf']
   xgboost:
     param_grid:
       n_estimators: [50, 100, 200]
       learning_rate: [0.01, 0.1, 0.2]
       max_depth: [3, 5, 7]
-      subsample: [0.8, 0.9, 1.0]
-
-# Parameters for model evaluation
-model_evaluation:
-  root_dir: artifacts/model_evaluation
-  test_data_path: artifacts/data_transformation/test.csv
-  model_path: artifacts/model_trainer/model.joblib
-  metric_file_name: artifacts/model_evaluation/metrics.json
-  target_column: 'Result (1=Passed, 0=Failed)'
