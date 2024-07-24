@@ -36,8 +36,13 @@ class ModelTrainerConfig:
     random_state: int
     models: dict
     param_grids: dict
-    alpha: float
-    l1_ratio: float
     target_column: str
     cv: int
     scoring: str
+    poly_features_degree: int
+    poly_features_path: Path
+    model_path: Path
+    imputation_strategy: str
+    scaling_method: str
+    sa_model_name: str
+    cv_model_name: str

@@ -54,19 +54,7 @@ class ConfigurationManager:
 
     def get_model_trainer_config(self) -> ModelTrainerConfig:
         config = self.config['model_trainer']
-        params = self.params['model_training']
-        param_grids = self.params['hyperparameter_tuning']
-
-        create_directories([config['root_dir']])
-
-        try:
-            alpha = params['models']['elasticnet']['alpha']
-            l1_ratio = params['models']['elasticnet']['l1_ratio']
-        except KeyError as e:
-            logger.error(f"KeyError: {e} - Check the params.yaml file for the correct structure.")
-            raise
-
-        target_column = params['target_column']
+        params = self.params
 
         def convert_to_dict(d):
             return {k: list(v) if isinstance(v, (list, tuple)) else v for k, v in d.items()}
@@ -75,14 +63,19 @@ class ConfigurationManager:
             root_dir=Path(config['root_dir']),
             train_data_path=Path(config['train_data_path']),
             test_data_path=Path(config['test_data_path']),
-            test_size=params['test_size'],
-            random_state=params['random_state'],
-            models=params['models'],
-            param_grids={key: convert_to_dict(value['param_grid']) for key, value in param_grids.items() if isinstance(value, dict) and 'param_grid' in value},
-            alpha=alpha,
-            l1_ratio=l1_ratio,
-            target_column=target_column,
-            cv=param_grids['cv'],
-            scoring=param_grids['scoring']
+            test_size=params['data_transformation']['test_size'],
+            random_state=params['data_transformation']['random_state'],
+            models=params['model_training']['models'],
+            param_grids={key: convert_to_dict(value['param_grid']) for key, value in params['hyperparameter_tuning'].items() if isinstance(value, dict) and 'param_grid' in value},
+            target_column=params['model_training']['target_column'],
+            cv=params['hyperparameter_tuning']['cv'],
+            scoring=params['hyperparameter_tuning']['scoring'],
+            poly_features_degree=params['data_transformation']['polynomial_features_degree'],
+            poly_features_path=Path(config['poly_features_path']),
+            model_path=Path(config['model_path']),
+            imputation_strategy=params['data_preprocessing']['imputation_strategy'],
+            scaling_method=params['data_transformation']['scaling_method'],
+            sa_model_name=config['sa_model_name'],
+            cv_model_name=config['cv_model_name']
         )
         return model_trainer_config
