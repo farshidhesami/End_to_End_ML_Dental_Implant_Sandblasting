@@ -39,6 +39,7 @@
         "quantile",
         "randomforest",
         "scatterplot",
+        "SMAPE",
         "squarederror",
         "statsmodels",
         "suptitle",

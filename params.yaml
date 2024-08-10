@@ -8,6 +8,7 @@ data_transformation:
   scaling_method: "StandardScaler"
   test_size: 0.2
   random_state: 42
+  lasso_max_iter: 10000
 
 # Parameters for model training
 model_training:
