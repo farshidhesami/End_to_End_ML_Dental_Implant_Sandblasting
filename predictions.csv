@@ -1,0 +1,4 @@
+Angle of Sandblasting,Pressure of Sandblasting (bar),Temperture of Acid Etching,Time of Acid Etching (min),Voltage of Anodizing (v),Time of  Anodizing (min),Predicted Surface Roughness (Sa),Predicted Cell Viability (%)
+35,4,50,7,100,8,2.0713696646748043,77.6436755189255
+40,3,60,5,90,6,1.43710874265902,0.0
+45,5,45,9,110,7,3.047513074888215,0.0
