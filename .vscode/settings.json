@@ -2,6 +2,7 @@
     "cSpell.words": [
         "annot",
         "astype",
+        "autopct",
         "axhline",
         "axvline",
         "barh",
@@ -45,6 +46,7 @@
         "scatterplot",
         "SMAPE",
         "squarederror",
+        "startangle",
         "statsmodels",
         "suptitle",
         "Temperture",

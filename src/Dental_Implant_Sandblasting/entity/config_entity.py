@@ -4,10 +4,11 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class DataIngestionConfig:
-    root_dir: Path
-    source_URL: str
-    local_data_file: Path
-    unzip_dir: Path
+    root_dir: Path          # Root directory for data ingestion artifacts
+    source_URL: str         # URL for downloading the dataset
+    local_data_file: Path   # Path to save the downloaded file
+    unzip_dir: Path         # Directory to extract the dataset
+
 
 @dataclass(frozen=True)
 class DataValidationConfig:
