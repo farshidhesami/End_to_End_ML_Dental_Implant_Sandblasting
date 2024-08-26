@@ -31,7 +31,7 @@ class ConfigurationManager:
         data_validation_config = DataValidationConfig(
             root_dir=Path(config['root_dir']),
             unzip_data_dir=Path(config['unzip_data_dir']),
-            STATUS_FILE=Path(config['STATUS_FILE']),
+            STATUS_FILE=config['STATUS_FILE'],
             all_schema=schema
         )
         return data_validation_config

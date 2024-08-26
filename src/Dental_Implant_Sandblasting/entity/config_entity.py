@@ -1,21 +1,19 @@
-# Config entity for data ingestion process (data ingestion config)
 from dataclasses import dataclass
 from pathlib import Path
 
 @dataclass(frozen=True)
 class DataIngestionConfig:
-    root_dir: Path          # Root directory for data ingestion artifacts
-    source_URL: str         # URL for downloading the dataset
-    local_data_file: Path   # Path to save the downloaded file
-    unzip_dir: Path         # Directory to extract the dataset
-
+    root_dir: Path                # Root directory for data ingestion artifacts
+    source_URL: str               # URL for downloading the dataset
+    local_data_file: Path         # Path to save the downloaded file
+    unzip_dir: Path               # Directory to extract the dataset
 
 @dataclass(frozen=True)
 class DataValidationConfig:
-    root_dir: Path
-    STATUS_FILE: str
-    unzip_data_dir: Path
-    all_schema: dict
+    root_dir: Path                # Root directory for data validation artifacts
+    STATUS_FILE: str              # Path to store the validation status file
+    unzip_data_dir: Path          # Directory where the extracted data file is located
+    all_schema: dict              # Dictionary holding schema definitions
 
 @dataclass(frozen=True)
 class DataTransformationConfig:
