@@ -2,13 +2,22 @@
 data_preprocessing:
   imputation_strategy: "mean"
 
-# Parameters for feature engineering
+# Parameters for data transformation (03_data_transformation.ipynb)
 data_transformation:
-  polynomial_features_degree: 2
-  scaling_method: "StandardScaler"
-  test_size: 0.2
-  random_state: 42
-  lasso_max_iter: 10000
+  polynomial_features_degree: 2         # Degree for polynomial features
+  scaling_method: "StandardScaler"      # Scaling method for feature scaling
+  test_size: 0.2                        # Test set size as a fraction of total data
+  random_state: 42                      # Random state for reproducibility
+  lasso_max_iter: 10000                 # Max iterations for Lasso regression
+
+# Parameters for exploratory data analysis (EDA) in data ingestion (01_data_ingestion.ipynb)
+eda:
+  cv_threshold: 0.99                    # Quantile threshold for detecting outliers in Cell Viability
+
+# Parameters for data validation (02_data_validation.ipynb)
+data_validation:
+  sa_lower_bound: 1.5                   # Lower bound for valid Surface Roughness (Sa) values
+  sa_upper_bound: 2.5                   # Upper bound for valid Surface Roughness (Sa) values
 
 # Parameters for model training
 model_training:

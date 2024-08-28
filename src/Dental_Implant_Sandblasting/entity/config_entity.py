@@ -17,14 +17,15 @@ class DataValidationConfig:
 
 @dataclass(frozen=True)
 class DataTransformationConfig:
-    root_dir: Path
-    data_path: Path
-    transformed_train_dir: Path
-    transformed_test_dir: Path
-    test_size: float
-    random_state: int
-    polynomial_features_degree: int
-    scaling_method: str
+    root_dir: Path                # Root directory for data transformation artifacts
+    data_path: Path               # Path to the cleaned and validated data file
+    transformed_train_dir: Path   # Directory to save the transformed training data
+    transformed_test_dir: Path    # Directory to save the transformed testing data
+    test_size: float              # Proportion of data to be used as the test set
+    random_state: int             # Random state for reproducibility
+    polynomial_features_degree: int  # Degree for polynomial feature generation
+    scaling_method: str           # Method used for scaling features (e.g., 'standard')
+    lasso_max_iter: int           # Maximum iterations for Lasso regression during feature selection
 
 @dataclass(frozen=True)
 class ModelTrainerConfig:

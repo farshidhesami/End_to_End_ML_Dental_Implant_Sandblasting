@@ -48,7 +48,8 @@ class ConfigurationManager:
             test_size=params['test_size'],
             random_state=params['random_state'],
             polynomial_features_degree=params['polynomial_features_degree'],
-            scaling_method=params['scaling_method']
+            scaling_method=params['scaling_method'],
+            lasso_max_iter=params['lasso_max_iter']
         )
         return data_transformation_config
 

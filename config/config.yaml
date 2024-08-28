@@ -28,8 +28,8 @@ model_trainer:
   model_name: model.joblib
   poly_features_path: artifacts/model_trainer/models/poly_features.joblib
   model_path: artifacts/model_trainer/models
-  sa_model_name: 'gradient_boosting'  # Best model for Surface Roughness
-  cv_model_name: 'gradient_boosting'  # Best model for Cell Viability
+  sa_model_name: 'gradient_boosting'   # Best model for Surface Roughness
+  cv_model_name: 'gradient_boosting'   # Best model for Cell Viability
 
 # root directory for model evaluation artifacts
 model_evaluation:

@@ -1,15 +1,14 @@
 import pandas as pd
 import numpy as np
+import os
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures
-from sklearn.impute import SimpleImputer
-from statsmodels.stats.outliers_influence import variance_inflation_factor
-from sklearn.linear_model import LassoCV
-from sklearn.feature_selection import SelectFromModel
+from sklearn.linear_model import Lasso
 from Dental_Implant_Sandblasting import logger
 from Dental_Implant_Sandblasting.entity.config_entity import DataTransformationConfig
 
+### Data Transformation class
 class DataTransformation:
     def __init__(self, config: DataTransformationConfig):
         self.config = config
@@ -31,80 +30,98 @@ class DataTransformation:
             data[col] = pd.to_numeric(data[col], errors='coerce')
 
         # Handle missing values by imputing
-        imputer = SimpleImputer(strategy='mean')
-        data_imputed = pd.DataFrame(imputer.fit_transform(data))
-        data_imputed.columns = data.columns
+        numeric_cols = data.select_dtypes(include=[np.number]).columns
+        data_imputed = data.copy()
+        data_imputed[numeric_cols] = data_imputed[numeric_cols].fillna(data_imputed[numeric_cols].mean())
 
         logger.info("Missing values handled")
         return data_imputed
 
     def feature_engineering(self, data):
-        # Generating polynomial features
-        poly = PolynomialFeatures(degree=self.config.polynomial_features_degree, include_bias=False)
-        poly_features = poly.fit_transform(data.drop(columns=['(Sa) Average of Surface roughness (micrometer)', 'Cell Viability (%)', 'Result (1=Passed, 0=Failed)']))
+        # Define feature and target columns
+        feature_columns = [
+            'Angle of Sandblasting', 
+            'Pressure of Sandblasting (bar)', 
+            'Temperture of Acid Etching', 
+            'Time of Acid Etching (min)', 
+            'Voltage of Anodizing (v)', 
+            'Time of  Anodizing (min)'
+        ]
+        target_column_sa = '(Sa) Average of Surface roughness (micrometer)'
+        target_column_cv = 'Cell Viability (%)'
 
-        # Scaling features
+        X = data[feature_columns]
+        y_sa = data[target_column_sa]
+        y_cv = data[target_column_cv]
+
+        # Apply PolynomialFeatures
+        poly = PolynomialFeatures(degree=self.config.polynomial_features_degree, include_bias=False, interaction_only=False)
+        X_poly = poly.fit_transform(X)
+
+        # Standardize the features
         scaler = StandardScaler()
-        scaled_features = scaler.fit_transform(poly_features)
+        X_scaled = scaler.fit_transform(X_poly)
 
-        # Create a DataFrame with the new features
-        feature_columns = poly.get_feature_names_out(data.columns[:-3])
-        engineered_data = pd.DataFrame(scaled_features, columns=feature_columns)
+        # Feature Selection using Lasso (as Lasso inherently performs feature selection)
+        lasso_sa = Lasso(alpha=0.01, max_iter=self.config.lasso_max_iter)
+        lasso_sa.fit(X_scaled, y_sa)
+        coef_lasso_sa = lasso_sa.coef_
 
-        # Add target columns back to the DataFrame
-        engineered_data['(Sa) Average of Surface roughness (micrometer)'] = data['(Sa) Average of Surface roughness (micrometer)'].values
-        engineered_data['Cell Viability (%)'] = data['Cell Viability (%)'].values
-        engineered_data['Result (1=Passed, 0=Failed)'] = data['Result (1=Passed, 0=Failed)'].values
+        lasso_cv = Lasso(alpha=0.01, max_iter=self.config.lasso_max_iter)
+        lasso_cv.fit(X_scaled, y_cv)
+        coef_lasso_cv = lasso_cv.coef_
 
-        logger.info("Feature engineering completed")
+        # Selecting the top features based on Lasso
+        threshold = 0.01  # Adjust this threshold based on model tuning
+        selected_features_sa = np.where(np.abs(coef_lasso_sa) > threshold)[0]
+        selected_features_cv = np.where(np.abs(coef_lasso_cv) > threshold)[0]
 
-        # Check for multicollinearity using VIF
-        vif_data = pd.DataFrame()
-        vif_data["feature"] = engineered_data.columns
-        vif_data["VIF"] = [variance_inflation_factor(engineered_data.values, i) for i in range(len(engineered_data.columns))]
-        logger.info(f"\nVIF before feature selection:\n{vif_data}")
+        X_selected_sa = X_scaled[:, selected_features_sa]
+        X_selected_cv = X_scaled[:, selected_features_cv]
 
-        # Feature selection using Lasso with increased iterations
-        lasso = LassoCV(max_iter=10000)
-        lasso.fit(scaled_features, data['(Sa) Average of Surface roughness (micrometer)'])
-        model = SelectFromModel(lasso, prefit=True)
-        X_selected = model.transform(scaled_features)
+        logger.info(f"Number of features selected for Sa: {X_selected_sa.shape[1]}")
+        logger.info(f"Number of features selected for CV: {X_selected_cv.shape[1]}")
 
-        selected_features = np.array(feature_columns)[model.get_support()]
-        logger.info(f"Selected Features:\n{selected_features}")
+        return X_selected_sa, X_selected_cv, y_sa, y_cv
 
-        return pd.DataFrame(X_selected, columns=selected_features), data[['(Sa) Average of Surface roughness (micrometer)', 'Cell Viability (%)', 'Result (1=Passed, 0=Failed)']]
+    def train_test_splitting(self, X_selected_sa, X_selected_cv, y_sa, y_cv):
+        # Split the data into training and testing sets for Surface Roughness (Sa) and Cell Viability (CV)
+        X_train_sa, X_test_sa, y_sa_train, y_sa_test = train_test_split(X_selected_sa, y_sa, test_size=self.config.test_size, random_state=self.config.random_state)
+        X_train_cv, X_test_cv, y_cv_train, y_cv_test = train_test_split(X_selected_cv, y_cv, test_size=self.config.test_size, random_state=self.config.random_state)
 
-    def train_test_splitting(self, features, targets):
-        train_features, test_features, train_targets, test_targets = train_test_split(
-            features, targets, test_size=self.config.test_size, random_state=self.config.random_state)
+        # Ensure directories exist before saving the files
+        os.makedirs(self.config.transformed_train_dir, exist_ok=True)
+        os.makedirs(self.config.transformed_test_dir, exist_ok=True)
 
-        train_data = pd.concat([train_features, train_targets.reset_index(drop=True)], axis=1)
-        test_data = pd.concat([test_features, test_targets.reset_index(drop=True)], axis=1)
+        # Save the transformed datasets
+        train_data_sa = pd.DataFrame(X_train_sa)
+        train_data_cv = pd.DataFrame(X_train_cv)
+        train_data_sa.to_csv(self.config.transformed_train_dir / 'train_sa.csv', index=False)
+        train_data_cv.to_csv(self.config.transformed_train_dir / 'train_cv.csv', index=False)
+        logger.info(f"Training data saved: Sa - {train_data_sa.shape}, CV - {train_data_cv.shape}")
 
-        train_data.to_csv(self.config.transformed_train_dir, index=False)
-        test_data.to_csv(self.config.transformed_test_dir, index=False)
-
-        logger.info(f"Train-test split completed with train shape: {train_data.shape} and test shape: {test_data.shape}")
-        print(train_data.shape)
-        print(test_data.shape)
+        test_data_sa = pd.DataFrame(X_test_sa)
+        test_data_cv = pd.DataFrame(X_test_cv)
+        test_data_sa.to_csv(self.config.transformed_test_dir / 'test_sa.csv', index=False)
+        test_data_cv.to_csv(self.config.transformed_test_dir / 'test_cv.csv', index=False)
+        logger.info(f"Testing data saved: Sa - {test_data_sa.shape}, CV - {test_data_cv.shape}")
 
     def execute(self):
         try:
             data = self.load_data()
             preprocessed_data = self.preprocess_data(data)
-            features, targets = self.feature_engineering(preprocessed_data)
-            self.train_test_splitting(features, targets)
+            X_selected_sa, X_selected_cv, y_sa, y_cv = self.feature_engineering(preprocessed_data)
+            self.train_test_splitting(X_selected_sa, X_selected_cv, y_sa, y_cv)
 
             # Create status file
             with open(self.config.root_dir / "status.txt", "w") as f:
-                f.write("Validation status: True")
+                f.write("Transformation status: True")
 
             logger.info("Data transformation and splitting completed successfully.")
         except Exception as e:
             # Create status file with failure status
             with open(self.config.root_dir / "status.txt", "w") as f:
-                f.write("Validation status: False")
+                f.write("Transformation status: False")
 
             logger.exception(e)
             raise e
