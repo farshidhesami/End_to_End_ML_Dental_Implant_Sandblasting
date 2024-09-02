@@ -17,24 +17,20 @@ data_validation:
 data_transformation:
   root_dir: artifacts/data_transformation
   data_path: artifacts/data_ingestion/Sandblasting-Condition.csv
-  transformed_train_path: artifacts/data_transformation/train.csv
-  transformed_test_path: artifacts/data_transformation/test.csv
+  transformed_train_path_sa: artifacts/data_transformation/train.csv/train_sa.csv  # Updated to point to specific train data file for Sa
+  transformed_test_path_sa: artifacts/data_transformation/test.csv/test_sa.csv    # Updated to point to specific test data file for Sa
+  transformed_train_path_cv: artifacts/data_transformation/train.csv/train_cv.csv  # Updated to point to specific train data file for CV
+  transformed_test_path_cv: artifacts/data_transformation/test.csv/test_cv.csv    # Updated to point to specific test data file for CV
 
 # root directory for model trainer artifacts
 model_trainer:
   root_dir: artifacts/model_trainer
-  train_data_path: artifacts/data_transformation/train.csv
-  test_data_path: artifacts/data_transformation/test.csv
+  train_data_path_sa: artifacts/data_transformation/train.csv/train_sa.csv  # Path to training data for Surface Roughness (Sa)
+  test_data_path_sa: artifacts/data_transformation/test.csv/test_sa.csv    # Path to testing data for Surface Roughness (Sa)
+  train_data_path_cv: artifacts/data_transformation/train.csv/train_cv.csv  # Path to training data for Cell Viability (CV)
+  test_data_path_cv: artifacts/data_transformation/test.csv/test_cv.csv    # Path to testing data for Cell Viability (CV)
   model_name: model.joblib
-  poly_features_path: artifacts/model_trainer/models/poly_features.joblib
   model_path: artifacts/model_trainer/models
   sa_model_name: 'gradient_boosting'   # Best model for Surface Roughness
   cv_model_name: 'gradient_boosting'   # Best model for Cell Viability
 
-# root directory for model evaluation artifacts
-model_evaluation:
-  root_dir: artifacts/model_evaluation
-  test_data_path: artifacts/data_transformation/test.csv
-  model_path: artifacts/model_trainer/models
-  metric_file_name: artifacts/model_evaluation/metrics.json
-  target_column: 'Result (1=Passed, 0=Failed)'

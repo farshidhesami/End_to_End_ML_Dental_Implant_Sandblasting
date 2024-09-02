@@ -1,14 +1,14 @@
 # Schema for the Sandblasting-Condition dataset
 
 COLUMNS:
-  Angle of Sandblasting: int64
-  Pressure of Sandblasting (bar): int64
-  Temperture of Acid Etching: int64
-  Time of Acid Etching (min): int64
-  Voltage of Anodizing (v): int64
-  Time of  Anodizing (min): int64
+  angle_sandblasting: int64
+  pressure_sandblasting_bar: int64
+  temperature_acid_etching: int64
+  time_acid_etching_min: int64
+  voltage_anodizing_v: int64
+  time_anodizing_min: int64
 
 TARGET_COLUMNS:
-  (Sa) Average of Surface roughness (micrometer): float64
-  Cell Viability (%): int64
-  Result (1=Passed, 0=Failed): int64
+  sa_surface_roughness_micrometer: float64
+  cell_viability_percent: int64
+  Result_Passed_1_Failed_0: int64

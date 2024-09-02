@@ -52,6 +52,7 @@ list_of_files = [
     "research/05_model_evaluation.ipynb",
     "research/Experiment.ipynb",
     "research/trials.ipynb",
+    "research/predictions",       # The "predictions" folder under the research directory is intended to store prediction results generated in the "Experiment.ipynb" notebook as part of the "Predictions (Step 8)" process.  .
     "templates/index.html",
     "templates/results.html"
 ]

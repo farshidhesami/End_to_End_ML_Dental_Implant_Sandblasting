@@ -27,4 +27,5 @@ python-dotenv
 Flask-Talisman
 Flask-SeaSurf
 bayesian-optimization
--e .              # The `.` refers to the current directory, which should contain a `setup.py` file .
+feature-engine  # feature-engine for Winsorizing
+-e .            # The `.` refers to the current directory, which should contain a `setup.py` file.
