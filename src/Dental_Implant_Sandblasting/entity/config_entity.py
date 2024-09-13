@@ -7,42 +7,27 @@ class DataIngestionConfig:
     source_URL: str               # URL for downloading the dataset
     local_data_file: Path         # Path to save the downloaded file
     unzip_dir: Path               # Directory to extract the dataset
+    columns_to_convert: list      # List of columns to convert to numeric
+    sa_lower_bound: float         # Lower bound for surface roughness
+    sa_upper_bound: float         # Upper bound for surface roughness
+    cell_viability_threshold: int # Threshold for cell viability to determine pass/fail
+    outlier_capping_method: str   # Method for capping outliers (e.g., 'quantiles')
+    outlier_tail: str             # Tail(s) to apply the outlier capping (e.g., 'both')
+    outlier_fold: float           # Fold for Winsorizing
+    log_transform_variable: str   # Variable to apply log transformation
 
 @dataclass(frozen=True)
 class DataValidationConfig:
     root_dir: Path                # Root directory for data validation artifacts
-    STATUS_FILE: str              # Path to store the validation status file
-    unzip_data_dir: Path          # Directory where the extracted data file is located
-    all_schema: dict              # Dictionary holding schema definitions
-
-@dataclass(frozen=True)
-class DataTransformationConfig:
-    root_dir: Path                # Root directory for data transformation artifacts
-    data_path: Path               # Path to the cleaned and validated data file
-    transformed_train_dir: Path   # Directory to save the transformed training data
-    transformed_test_dir: Path    # Directory to save the transformed testing data
-    test_size: float              # Proportion of data to be used as the test set
+    STATUS_FILE: str              # Path to save validation status
+    unzip_data_dir: Path          # Directory containing the extracted dataset
+    all_schema: dict              # Schema dictionary for column validation
+    columns_to_convert: list      # Columns to be converted to numeric
+    knn_n_neighbors: int          # Number of neighbors for KNN imputation
+    sa_lower_bound: float         # Lower bound for surface roughness
+    sa_upper_bound: float         # Upper bound for surface roughness
+    feature_columns: list         # Feature columns for modeling
+    target_column_sa: str         # Target column for Surface Roughness (Sa)
+    target_column_cv: str         # Target column for Cell Viability (CV)
+    test_size: float              # Test size for train/test split
     random_state: int             # Random state for reproducibility
-    polynomial_features_degree: int  # Degree for polynomial feature generation
-    scaling_method: str           # Method used for scaling features (e.g., 'standard')
-    lasso_max_iter: int           # Maximum iterations for Lasso regression during feature selection
-
-@dataclass(frozen=True)
-class ModelTrainerConfig:
-    root_dir: Path
-    train_data_path: Path
-    test_data_path: Path
-    test_size: float
-    random_state: int
-    models: dict
-    param_grids: dict
-    target_column: str
-    cv: int
-    scoring: str
-    poly_features_degree: int
-    poly_features_path: Path
-    model_path: Path
-    imputation_strategy: str
-    scaling_method: str
-    sa_model_name: str
-    cv_model_name: str

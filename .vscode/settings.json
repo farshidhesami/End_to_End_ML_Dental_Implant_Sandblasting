@@ -51,6 +51,7 @@
         "pbounds",
         "prefit",
         "quantile",
+        "quantiles",
         "randomforest",
         "residplot",
         "scatterplot",

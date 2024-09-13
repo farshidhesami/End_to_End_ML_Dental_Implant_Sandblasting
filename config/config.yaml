@@ -1,36 +1,34 @@
 artifacts_root: artifacts
 
-# root directory for data ingestion artifacts
+# Root directory for data ingestion artifacts
 data_ingestion:
   root_dir: artifacts/data_ingestion
   source_URL: https://github.com/farshidhesami/Branching-tutorial/raw/master/Sandblasting-Condition.zip
   local_data_file: artifacts/data_ingestion/data.zip
   unzip_dir: artifacts/data_ingestion
+  columns_to_convert:
+    - "pressure_sandblasting_bar"
+    - "temperature_acid_etching"
+    - "time_acid_etching_min"
+    - "voltage_anodizing_v"
+    - "time_anodizing_min"
+    - "sa_surface_roughness_micrometer"
+    - "cell_viability_percent"
 
-# root directory for data validation artifacts
 data_validation:
   root_dir: artifacts/data_validation
   unzip_data_dir: artifacts/data_ingestion/Sandblasting-Condition.csv
-  STATUS_FILE: artifacts/data_validation/status.txt
-
-# root directory for data transformation artifacts
-data_transformation:
-  root_dir: artifacts/data_transformation
-  data_path: artifacts/data_ingestion/Sandblasting-Condition.csv
-  transformed_train_path_sa: artifacts/data_transformation/train.csv/train_sa.csv  # Updated to point to specific train data file for Sa
-  transformed_test_path_sa: artifacts/data_transformation/test.csv/test_sa.csv    # Updated to point to specific test data file for Sa
-  transformed_train_path_cv: artifacts/data_transformation/train.csv/train_cv.csv  # Updated to point to specific train data file for CV
-  transformed_test_path_cv: artifacts/data_transformation/test.csv/test_cv.csv    # Updated to point to specific test data file for CV
-
-# root directory for model trainer artifacts
-model_trainer:
-  root_dir: artifacts/model_trainer
-  train_data_path_sa: artifacts/data_transformation/train.csv/train_sa.csv  # Path to training data for Surface Roughness (Sa)
-  test_data_path_sa: artifacts/data_transformation/test.csv/test_sa.csv    # Path to testing data for Surface Roughness (Sa)
-  train_data_path_cv: artifacts/data_transformation/train.csv/train_cv.csv  # Path to training data for Cell Viability (CV)
-  test_data_path_cv: artifacts/data_transformation/test.csv/test_cv.csv    # Path to testing data for Cell Viability (CV)
-  model_name: model.joblib
-  model_path: artifacts/model_trainer/models
-  sa_model_name: 'gradient_boosting'   # Best model for Surface Roughness
-  cv_model_name: 'gradient_boosting'   # Best model for Cell Viability
+  STATUS_FILE: artifacts/data_validation/validation_status.txt
+  knn_n_neighbors: 5
+  sa_lower_bound: 1.5
+  sa_upper_bound: 2.5
+  feature_columns:
+    - "angle_sandblasting"
+    - "pressure_sandblasting_bar"
+    - "temperature_acid_etching"
+    - "time_acid_etching_min"
+    - "voltage_anodizing_v"
+    - "time_anodizing_min"
+  target_column_sa: "sa_surface_roughness_micrometer"
+  target_column_cv: "cell_viability_percent"
 

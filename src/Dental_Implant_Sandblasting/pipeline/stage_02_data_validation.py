@@ -12,9 +12,17 @@ class DataValidationTrainingPipeline:
         config = ConfigurationManager()
         data_validation_config = config.get_data_validation_config()
         data_validation = DataValidation(config=data_validation_config)
+
+        # Step 1: Validate all columns
         validation_status = data_validation.validate_all_columns()
         logger.info(f"Validation status: {validation_status}")
 
+        # Step 2: If validation passes, preprocess the data
+        if validation_status:
+            logger.info("Validation successful. Proceeding to data preprocessing...")
+            data_validation.preprocess_data()
+        else:
+            logger.error("Validation failed. Preprocessing will not proceed.")
 
 if __name__ == '__main__':
     try:
