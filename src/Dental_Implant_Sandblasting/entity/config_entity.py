@@ -31,3 +31,16 @@ class DataValidationConfig:
     target_column_cv: str         # Target column for Cell Viability (CV)
     test_size: float              # Test size for train/test split
     random_state: int             # Random state for reproducibility
+
+@dataclass(frozen=True)
+class DataTransformationConfig:
+    root_dir: Path                # Root directory for data transformation artifacts
+    data_path: Path               # Path to the dataset
+    transformed_train_dir: Path   # Directory to save the transformed training data
+    transformed_test_dir: Path    # Directory to save the transformed testing data
+    test_size: float              # Test size for train-test split
+    random_state: int             # Random state for reproducibility
+    polynomial_features_degree: int  # Degree for polynomial features
+    scaling_method: str           # Method to scale the data (e.g., 'RobustScaler')
+    lasso_max_iter: int           # Maximum iterations for Lasso regression
+    knn_n_neighbors: int          # Number of neighbors for KNN imputation

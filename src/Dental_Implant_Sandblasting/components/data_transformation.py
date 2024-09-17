@@ -3,12 +3,15 @@ import numpy as np
 import os
 from pathlib import Path
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, PolynomialFeatures
+from sklearn.preprocessing import RobustScaler, PolynomialFeatures
+from sklearn.decomposition import PCA
+from sklearn.feature_selection import RFE
 from sklearn.linear_model import Lasso
+from sklearn.impute import KNNImputer
 from Dental_Implant_Sandblasting import logger
 from Dental_Implant_Sandblasting.entity.config_entity import DataTransformationConfig
 
-### Data Transformation class
+# Data Transformation class
 class DataTransformation:
     def __init__(self, config: DataTransformationConfig):
         self.config = config
@@ -29,65 +32,54 @@ class DataTransformation:
         for col in data.columns:
             data[col] = pd.to_numeric(data[col], errors='coerce')
 
-        # Handle missing values by imputing
-        numeric_cols = data.select_dtypes(include=[np.number]).columns
-        data_imputed = data.copy()
-        data_imputed[numeric_cols] = data_imputed[numeric_cols].fillna(data_imputed[numeric_cols].mean())
+        # Use KNN Imputer to handle missing values
+        imputer = KNNImputer(n_neighbors=self.config.knn_n_neighbors)
+        data_imputed = pd.DataFrame(imputer.fit_transform(data), columns=data.columns)
 
-        logger.info("Missing values handled")
+        logger.info("Missing values handled using KNN imputation")
         return data_imputed
 
     def feature_engineering(self, data):
         # Define feature and target columns
-        feature_columns = [
-            'Angle of Sandblasting', 
-            'Pressure of Sandblasting (bar)', 
-            'Temperture of Acid Etching', 
-            'Time of Acid Etching (min)', 
-            'Voltage of Anodizing (v)', 
-            'Time of  Anodizing (min)'
-        ]
-        target_column_sa = '(Sa) Average of Surface roughness (micrometer)'
-        target_column_cv = 'Cell Viability (%)'
+        feature_columns = self.config.feature_columns
+        target_column_sa = self.config.target_column_sa
+        target_column_cv = self.config.target_column_cv
 
         X = data[feature_columns]
         y_sa = data[target_column_sa]
         y_cv = data[target_column_cv]
 
         # Apply PolynomialFeatures
-        poly = PolynomialFeatures(degree=self.config.polynomial_features_degree, include_bias=False, interaction_only=False)
+        poly = PolynomialFeatures(degree=self.config.polynomial_features_degree, include_bias=False)
         X_poly = poly.fit_transform(X)
 
-        # Standardize the features
-        scaler = StandardScaler()
+        # Standardize the features using RobustScaler
+        scaler = RobustScaler()
         X_scaled = scaler.fit_transform(X_poly)
 
-        # Feature Selection using Lasso (as Lasso inherently performs feature selection)
-        lasso_sa = Lasso(alpha=0.01, max_iter=self.config.lasso_max_iter)
-        lasso_sa.fit(X_scaled, y_sa)
-        coef_lasso_sa = lasso_sa.coef_
+        # Apply PCA for dimensionality reduction
+        pca = PCA(n_components=0.95)
+        X_pca = pca.fit_transform(X_scaled)
+        logger.info(f"Number of components after PCA: {X_pca.shape[1]}")
 
-        lasso_cv = Lasso(alpha=0.01, max_iter=self.config.lasso_max_iter)
-        lasso_cv.fit(X_scaled, y_cv)
-        coef_lasso_cv = lasso_cv.coef_
+        # Feature Selection using RFE with Lasso
+        lasso_model = Lasso(alpha=0.01, max_iter=self.config.lasso_max_iter)
 
-        # Selecting the top features based on Lasso
-        threshold = 0.01  # Adjust this threshold based on model tuning
-        selected_features_sa = np.where(np.abs(coef_lasso_sa) > threshold)[0]
-        selected_features_cv = np.where(np.abs(coef_lasso_cv) > threshold)[0]
+        rfe_sa = RFE(lasso_model, n_features_to_select=10)
+        X_sa_rfe = rfe_sa.fit_transform(X_pca, y_sa)
 
-        X_selected_sa = X_scaled[:, selected_features_sa]
-        X_selected_cv = X_scaled[:, selected_features_cv]
+        rfe_cv = RFE(lasso_model, n_features_to_select=10)
+        X_cv_rfe = rfe_cv.fit_transform(X_pca, y_cv)
 
-        logger.info(f"Number of features selected for Sa: {X_selected_sa.shape[1]}")
-        logger.info(f"Number of features selected for CV: {X_selected_cv.shape[1]}")
+        logger.info(f"Number of features selected for Sa after RFE: {X_sa_rfe.shape[1]}")
+        logger.info(f"Number of features selected for CV after RFE: {X_cv_rfe.shape[1]}")
 
-        return X_selected_sa, X_selected_cv, y_sa, y_cv
+        return X_sa_rfe, X_cv_rfe, y_sa, y_cv
 
-    def train_test_splitting(self, X_selected_sa, X_selected_cv, y_sa, y_cv):
+    def train_test_splitting(self, X_sa_rfe, X_cv_rfe, y_sa, y_cv):
         # Split the data into training and testing sets for Surface Roughness (Sa) and Cell Viability (CV)
-        X_train_sa, X_test_sa, y_sa_train, y_sa_test = train_test_split(X_selected_sa, y_sa, test_size=self.config.test_size, random_state=self.config.random_state)
-        X_train_cv, X_test_cv, y_cv_train, y_cv_test = train_test_split(X_selected_cv, y_cv, test_size=self.config.test_size, random_state=self.config.random_state)
+        X_train_sa, X_test_sa, y_sa_train, y_sa_test = train_test_split(X_sa_rfe, y_sa, test_size=self.config.test_size, random_state=self.config.random_state)
+        X_train_cv, X_test_cv, y_cv_train, y_cv_test = train_test_split(X_cv_rfe, y_cv, test_size=self.config.test_size, random_state=self.config.random_state)
 
         # Ensure directories exist before saving the files
         os.makedirs(self.config.transformed_train_dir, exist_ok=True)
@@ -110,8 +102,8 @@ class DataTransformation:
         try:
             data = self.load_data()
             preprocessed_data = self.preprocess_data(data)
-            X_selected_sa, X_selected_cv, y_sa, y_cv = self.feature_engineering(preprocessed_data)
-            self.train_test_splitting(X_selected_sa, X_selected_cv, y_sa, y_cv)
+            X_sa_rfe, X_cv_rfe, y_sa, y_cv = self.feature_engineering(preprocessed_data)
+            self.train_test_splitting(X_sa_rfe, X_cv_rfe, y_sa, y_cv)
 
             # Create status file
             with open(self.config.root_dir / "status.txt", "w") as f:

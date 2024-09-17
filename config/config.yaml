@@ -19,9 +19,6 @@ data_validation:
   root_dir: artifacts/data_validation
   unzip_data_dir: artifacts/data_ingestion/Sandblasting-Condition.csv
   STATUS_FILE: artifacts/data_validation/validation_status.txt
-  knn_n_neighbors: 5
-  sa_lower_bound: 1.5
-  sa_upper_bound: 2.5
   feature_columns:
     - "angle_sandblasting"
     - "pressure_sandblasting_bar"
@@ -31,4 +28,10 @@ data_validation:
     - "time_anodizing_min"
   target_column_sa: "sa_surface_roughness_micrometer"
   target_column_cv: "cell_viability_percent"
+
+data_transformation:
+  root_dir: artifacts/data_transformation
+  data_path: artifacts/data_ingestion/Sandblasting-Condition.csv
+  transformed_train_dir: artifacts/data_transformation/train
+  transformed_test_dir: artifacts/data_transformation/test
 

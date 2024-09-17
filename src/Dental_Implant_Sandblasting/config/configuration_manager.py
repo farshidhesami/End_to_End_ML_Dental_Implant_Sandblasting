@@ -4,7 +4,8 @@ from Dental_Implant_Sandblasting.constants import CONFIG_FILE_PATH, PARAMS_FILE_
 from Dental_Implant_Sandblasting.utils.common import read_yaml, create_directories
 from Dental_Implant_Sandblasting.entity.config_entity import (
     DataIngestionConfig,
-    DataValidationConfig
+    DataValidationConfig,
+    DataTransformationConfig
 )
 
 # Define Configuration Manager
@@ -64,15 +65,62 @@ class ConfigurationManager:
             unzip_data_dir=Path(config['unzip_data_dir']),                    # Updated to include the CSV path
             STATUS_FILE=Path(config['STATUS_FILE']),
             all_schema=schema,
-            columns_to_convert=config['columns_to_convert'],     # Fetch from config.yaml
-            knn_n_neighbors=params['knn_n_neighbors'],           # Fetch from params.yaml
-            sa_lower_bound=params['sa_lower_bound'],             # Fetch from params.yaml
-            sa_upper_bound=params['sa_upper_bound'],             # Fetch from params.yaml
-            feature_columns=config['feature_columns'],           # Fetch from config.yaml
-            target_column_sa=config['target_column_sa'],         # Fetch from config.yaml
-            target_column_cv=config['target_column_cv'],         # Fetch from config.yaml
-            test_size=params['test_size'],                       # Fetch from params.yaml
-            random_state=params['random_state']                  # Fetch from params.yaml
+            columns_to_convert=config['columns_to_convert'],
+            knn_n_neighbors=params['knn_n_neighbors'],
+            sa_lower_bound=params['sa_lower_bound'],
+            sa_upper_bound=params['sa_upper_bound'],
+            feature_columns=config['feature_columns'],
+            target_column_sa=config['target_column_sa'],
+            target_column_cv=config['target_column_cv'],
+            test_size=params['test_size'],
+            random_state=params['random_state']
         )
 
         return data_validation_config
+
+    # Fetch Data Transformation Config
+    def get_data_transformation_config(self) -> DataTransformationConfig:
+        # Extracting transformation configurations and parameters
+        config = self.config['data_transformation']
+        params = self.params['data_transformation']
+
+        # Create the root directory for data transformation artifacts
+        create_directories([config['root_dir']])
+
+        data_transformation_config = DataTransformationConfig(
+            root_dir=Path(config['root_dir']),
+            data_path=Path(config['data_path']),
+            transformed_train_dir=Path(config['transformed_train_path']),
+            transformed_test_dir=Path(config['transformed_test_path']),
+            test_size=params['test_size'],
+            random_state=params['random_state'],
+            polynomial_features_degree=params['polynomial_features_degree'],
+            scaling_method=params['scaling_method'],
+            lasso_max_iter=params['lasso_max_iter']
+        )
+
+        return data_transformation_config
+
+    # Fetch Data Transformation Config
+    def get_data_transformation_config(self) -> DataTransformationConfig:
+        # Extracting transformation configurations and parameters
+        config = self.config['data_transformation']
+        params = self.params['data_transformation']
+
+        # Create the root directory for data transformation artifacts
+        create_directories([config['root_dir']])
+
+        data_transformation_config = DataTransformationConfig(
+            root_dir=Path(config['root_dir']),
+            data_path=Path(config['data_path']),
+            transformed_train_dir=Path(config['transformed_train_path']),
+            transformed_test_dir=Path(config['transformed_test_path']),
+            test_size=params['test_size'],
+            random_state=params['random_state'],
+            polynomial_features_degree=params['polynomial_features_degree'],
+            scaling_method=params['scaling_method'],
+            lasso_max_iter=params['lasso_max_iter'],
+            knn_n_neighbors=params['knn_n_neighbors']
+        )
+
+        return data_transformation_config

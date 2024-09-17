@@ -17,3 +17,13 @@ data_validation:
   sa_upper_bound: 2.5                               # Upper bound for surface roughness
   test_size: 0.2                                    # Test size for splitting
   random_state: 42                                  # Random state for reproducibility
+
+# Parameters for 03_data_transformation
+
+data_transformation:
+  test_size: 0.2                                    # Test size for train-test split
+  random_state: 42                                  # Random state for reproducibility
+  polynomial_features_degree: 2                     # Degree for polynomial features
+  scaling_method: "robust"                          # Scaling method (e.g., robust, standard)
+  lasso_max_iter: 10000                             # Maximum iterations for Lasso regression
+  knn_n_neighbors: 5                                # Number of neighbors for KNN imputation
