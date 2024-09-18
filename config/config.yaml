@@ -32,6 +32,5 @@ data_validation:
 data_transformation:
   root_dir: artifacts/data_transformation
   data_path: artifacts/data_ingestion/Sandblasting-Condition.csv
-  transformed_train_dir: artifacts/data_transformation/train
-  transformed_test_dir: artifacts/data_transformation/test
-
+  transformed_train_path: artifacts/data_transformation/train
+  transformed_test_path: artifacts/data_transformation/test
