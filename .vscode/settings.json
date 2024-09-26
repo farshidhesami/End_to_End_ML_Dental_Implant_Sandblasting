@@ -39,6 +39,7 @@
         "linewidth",
         "logspace",
         "lowess",
+        "lsqr",
         "MAPE",
         "matplotlib",
         "medae",

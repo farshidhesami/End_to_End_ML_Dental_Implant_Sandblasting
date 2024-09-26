@@ -1,29 +1,58 @@
 # Parameters for 01_data_ingestion
-
 data_ingestion:
-  sa_lower_bound: 1.5                               # Lower bound for surface roughness
-  sa_upper_bound: 2.5                               # Upper bound for surface roughness
-  cell_viability_threshold: 90                      # Threshold for cell viability to determine pass/fail
-  outlier_capping_method: "quantiles"               # Method for capping outliers
-  outlier_tail: "both"                              # Tail(s) to apply the outlier capping
-  outlier_fold: 0.05                                # Fold for Winsorizing
-  log_transform_variable: "cell_viability_percent"  # Variable to apply log transformation
+  sa_lower_bound: 1.5
+  sa_upper_bound: 2.5
+  cell_viability_threshold: 90
+  outlier_capping_method: "quantiles"
+  outlier_tail: "both"
+  outlier_fold: 0.05
+  log_transform_variable: "cell_viability_percent"
 
 # Parameters for 02_data_validation
-
 data_validation:
-  knn_n_neighbors: 5                                # Number of neighbors for KNN imputation
-  sa_lower_bound: 1.5                               # Lower bound for surface roughness
-  sa_upper_bound: 2.5                               # Upper bound for surface roughness
-  test_size: 0.2                                    # Test size for splitting
-  random_state: 42                                  # Random state for reproducibility
+  knn_n_neighbors: 5
+  sa_lower_bound: 1.5
+  sa_upper_bound: 2.5
+  test_size: 0.2
+  random_state: 42
 
 # Parameters for 03_data_transformation
-
 data_transformation:
-  test_size: 0.2                                    # Test size for train-test split
-  random_state: 42                                  # Random state for reproducibility
-  polynomial_features_degree: 2                     # Degree for polynomial features
-  scaling_method: "robust"                          # Scaling method (e.g., robust, standard)
-  lasso_max_iter: 10000                             # Maximum iterations for Lasso regression
-  knn_n_neighbors: 5                                # Number of neighbors for KNN imputation
+  test_size: 0.2
+  random_state: 42
+  polynomial_features_degree: 2
+  scaling_method: "robust"
+  lasso_max_iter: 10000
+  knn_n_neighbors: 5
+
+# Parameters for 04_model_trainer
+model_training:
+  test_size: 0.2
+  random_state: 42
+  models:
+    RandomForest:
+      n_estimators: 100
+      max_depth: 10
+    BaggingRF:
+      n_estimators: 50
+
+  param_grid_rf:                              # Parameters for RandomForest hyperparameter tuning
+    n_estimators: [100, 200, 300, 400]
+    max_depth: [null, 10, 20, 30, 40]         # Use null for None in YAML
+    min_samples_split: [2, 5, 10]
+    min_samples_leaf: [1, 2, 4]
+    bootstrap: [True, False]
+
+  param_grid_bagging:                         # Parameters for BaggingRF hyperparameter tuning
+    n_estimators: [10, 50, 100]
+    max_samples: [0.5, 0.7, 1.0]
+    max_features: [0.5, 0.7, 1.0]
+    estimator__max_depth: [null, 10, 20, 30]  # Use null for None in YAML
+
+  param_grid_ridge:                           # Parameters for Ridge regression hyperparameter tuning
+    alpha: [0.01, 0.1, 1, 10, 100]
+
+  n_iter: 20                                  # Number of iterations for RandomizedSearchCV
+  cv: 3                                       # Number of cross-validation folds
+  verbose: 2                                  # Verbosity level for model training and tuning
+  n_jobs: -1                                  # Use all available processors for parallel computation
