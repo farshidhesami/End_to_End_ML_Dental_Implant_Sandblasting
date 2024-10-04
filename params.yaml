@@ -56,3 +56,16 @@ model_training:
   cv: 3                                       # Number of cross-validation folds
   verbose: 2                                  # Verbosity level for model training and tuning
   n_jobs: -1                                  # Use all available processors for parallel computation
+
+# Parameters for 05_model_evaluation
+model_evaluation:
+  n_estimators_rf: 400
+  max_depth_rf: 30
+  min_samples_split_rf: 5
+  min_samples_leaf_rf: 4
+  bootstrap_rf: true
+  alpha_ridge: 100
+  n_estimators_bagging: 100
+  max_samples_bagging: 0.5
+  max_features_bagging: 0.7
+  random_state: 42

@@ -36,13 +36,20 @@ data_transformation:
   data_path: artifacts/data_ingestion/Sandblasting-Condition.csv
   transformed_train_path: artifacts/data_transformation/train
   transformed_test_path: artifacts/data_transformation/test
-  
+
 # Root directory for 04_model_trainer artifacts
 model_trainer:
   root_dir: artifacts/model_trainer
   transformed_train_dir: artifacts/data_transformation/train
   transformed_test_dir: artifacts/data_transformation/test
-  model_path: artifacts/model_trainer   # Adjusted to match the desired path for joblib files
-  sa_model_name: best_model_sa.joblib
-  cv_model_name: best_model_cv.joblib
-  ridge_model_name: best_ridge_model_sa.joblib
+  model_path: artifacts/model_trainer   # Path for saving model joblib files
+  sa_model_name: best_rf_model_sa.joblib  # Random Forest model for Surface Roughness
+  cv_model_name: best_rf_model_cv.joblib  # Bagging model for Cell Viability
+  ridge_model_name: best_ridge_model_sa.joblib  # Ridge model for Surface Roughness
+
+# Root directory for 05_model_evaluation artifacts
+model_evaluation:
+  root_dir: artifacts/model_evaluation
+  model_dir: artifacts/model_trainer
+  test_sa_data: artifacts/data_transformation/test/test_sa_target.csv
+  test_cv_data: artifacts/data_transformation/test/test_cv_target.csv
