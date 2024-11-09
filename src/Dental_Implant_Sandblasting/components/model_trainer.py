@@ -1,261 +1,190 @@
+from pathlib import Path
 import pandas as pd
 import numpy as np
-from pathlib import Path
-from sklearn.linear_model import Ridge, ElasticNet, BayesianRidge, HuberRegressor
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.svm import SVR
-from xgboost import XGBRegressor
-from sklearn.model_selection import GridSearchCV, cross_val_score
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, median_absolute_error, mean_absolute_percentage_error
-from sklearn.preprocessing import StandardScaler, PolynomialFeatures
-from sklearn.impute import SimpleImputer
 import joblib
+from sklearn.ensemble import RandomForestRegressor, BaggingRegressor
+from sklearn.linear_model import Ridge
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import RandomizedSearchCV
 import matplotlib.pyplot as plt
 import seaborn as sns
 from Dental_Implant_Sandblasting import logger
 from Dental_Implant_Sandblasting.entity.config_entity import ModelTrainerConfig
 
-# Define ModelTrainer class
+# ModelTrainer class
 class ModelTrainer:
     def __init__(self, config: ModelTrainerConfig):
         self.config = config
-        self.poly = None  # Initialize the poly attribute
+
+    # Custom evaluation metrics
+    def smape(self, y_true, y_pred):
+        return 100 * np.mean(2 * np.abs(y_pred - y_true) / (np.abs(y_pred) + np.abs(y_true) + 1e-10))
+
+    def mape(self, y_true, y_pred):
+        return 100 * np.mean(np.abs((y_true - y_pred) / y_true))
 
     def load_data(self):
+        # Define paths to the training and testing data
+        train_sa_path = self.config.transformed_train_dir / 'train_sa_target.csv'
+        test_sa_path = self.config.transformed_test_dir / 'test_sa_target.csv'
+        train_cv_path = self.config.transformed_train_dir / 'train_cv_target.csv'
+        test_cv_path = self.config.transformed_test_dir / 'test_cv_target.csv'
+
+        # Load data
+        train_sa_data = pd.read_csv(train_sa_path)
+        test_sa_data = pd.read_csv(test_sa_path)
+        train_cv_data = pd.read_csv(train_cv_path)
+        test_cv_data = pd.read_csv(test_cv_path)
+
+        # Extracting feature columns
+        X_train_sa = train_sa_data.iloc[:, :-1]  # Assuming the last column is the target
+        y_train_sa = train_sa_data.iloc[:, -1]
+        X_test_sa = test_sa_data.iloc[:, :-1]
+        y_test_sa = test_sa_data.iloc[:, -1]
+
+        X_train_cv = train_cv_data.iloc[:, :-1]  # Assuming the last column is the target
+        y_train_cv = train_cv_data.iloc[:, -1]
+        X_test_cv = test_cv_data.iloc[:, :-1]
+        y_test_cv = test_cv_data.iloc[:, -1]
+
+        return (X_train_sa, y_train_sa, X_test_sa, y_test_sa), (X_train_cv, y_train_cv, X_test_cv, y_test_cv)
+
+    def train_models(self, X_train, y_train, X_test, y_test, model_name):
+        models = {
+            "RandomForest": RandomForestRegressor(random_state=self.config.random_state),
+            "BaggingRF": BaggingRegressor(estimator=RandomForestRegressor(random_state=self.config.random_state), random_state=self.config.random_state),
+            "Ridge": Ridge()
+        }
+
+        # Initialize dictionary for storing model performance
+        model_performance = {}
+
+        # Ensure the 'model_trainer' directory exists
+        model_trainer_dir = self.config.root_dir  # Directly use root_dir from the config
+        os.makedirs(model_trainer_dir, exist_ok=True)
+
+        for name, model in models.items():
+            logger.info(f"Training {name} model for {model_name}...")
+            model.fit(X_train, y_train)
+
+            # Predictions
+            y_pred = model.predict(X_test)
+
+            # Calculate evaluation metrics
+            mae = mean_absolute_error(y_test, y_pred)
+            mse = mean_squared_error(y_test, y_pred)
+            r2 = r2_score(y_test, y_pred)
+            mape_val = self.mape(y_test, y_pred)
+            smape_val = self.smape(y_test, y_pred)
+
+            model_performance[name] = {
+                "MAE": mae,
+                "MSE": mse,
+                "R²": r2,
+                "MAPE": mape_val,
+                "SMAPE": smape_val
+            }
+
+            logger.info(f"{name} - MAE: {mae:.4f}, R²: {r2:.4f}")
+
+            # Save the model
+            joblib.dump(model, model_trainer_dir / f"{name}_{model_name}.joblib")
+
+        return model_performance
+
+    def hyperparameter_tuning(self, X_train, y_train, model_name):
+        if model_name == "RandomForest":
+            param_grid = self.config.param_grid_rf
+            model = RandomForestRegressor(random_state=self.config.random_state)
+        elif model_name == "BaggingRF":
+            param_grid = self.config.param_grid_bagging
+            model = BaggingRegressor(estimator=RandomForestRegressor(random_state=self.config.random_state), random_state=self.config.random_state)
+        elif model_name == "Ridge":
+            param_grid = self.config.param_grid_ridge
+            model = Ridge()
+
         try:
-            train_data = pd.read_csv(self.config.train_data_path)
-            test_data = pd.read_csv(self.config.test_data_path)
+            random_search = RandomizedSearchCV(estimator=model, param_distributions=param_grid, n_iter=self.config.n_iter,
+                                               cv=self.config.cv, verbose=self.config.verbose, random_state=self.config.random_state, n_jobs=self.config.n_jobs)
+            random_search.fit(X_train, y_train)
+            best_model = random_search.best_estimator_
+            logger.info(f"Best parameters for {model_name}: {random_search.best_params_}")
 
-            X_train = train_data.drop(columns=[self.config.target_column])
-            y_train = train_data[self.config.target_column]
+            # Visualizations for Hyperparameter Tuning
+            self.visualize_hyperparameter_tuning(random_search, model_name)
 
-            X_test = test_data.drop(columns=[self.config.target_column])
-            y_test = test_data[self.config.target_column]
-
-            return X_train, y_train, X_test, y_test
+            return best_model
         except Exception as e:
-            logger.error(f"Error loading data: {e}")
+            logger.exception(f"Error during hyperparameter tuning for {model_name}: {e}")
             raise e
 
-    def preprocess_data(self, X_train, y_train, X_test, y_test):
-        try:
-            # Imputation
-            imputer = SimpleImputer(strategy=self.config.imputation_strategy)
-            X_train = imputer.fit_transform(X_train)
-            X_test = imputer.transform(X_test)
+    # Visualization method for hyperparameter tuning
+    def visualize_hyperparameter_tuning(self, random_search, model_name):
+        results = random_search.cv_results_
+        plt.figure(figsize=(10, 6))
+        plt.plot(results['mean_test_score'], label=f'{model_name} Mean Test Score')
+        plt.fill_between(
+            range(len(results['mean_test_score'])),
+            results['mean_test_score'] - results['std_test_score'],
+            results['mean_test_score'] + results['std_test_score'],
+            alpha=0.2
+        )
+        plt.title(f'{model_name} Hyperparameter Tuning Performance')
+        plt.xlabel('Parameter Combination Index')
+        plt.ylabel('Mean Test Score (R²)')
+        plt.legend()
+        plt.show()
 
-            y_imputer = SimpleImputer(strategy="most_frequent")
-            y_train = y_imputer.fit_transform(y_train.values.reshape(-1, 1)).ravel()
-            y_test = y_imputer.transform(y_test.values.reshape(-1, 1)).ravel()
+    def visualize_results(self, y_test, y_pred, model_name):
+        plt.figure(figsize=(12, 6))
+        plt.scatter(y_test, y_pred, alpha=0.7, edgecolors='b')
+        plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'k--', lw=3)
+        plt.title(f"Predictions vs. True Values for {model_name}")
+        plt.xlabel("True Values")
+        plt.ylabel("Predictions")
+        plt.tight_layout()
+        plt.show()
 
-            # Create polynomial features
-            poly = PolynomialFeatures(degree=self.config.poly_features_degree)
-            self.poly = poly  # Assign the poly attribute
-            X_train_poly = poly.fit_transform(X_train)
-            X_test_poly = poly.transform(X_test)
-
-            # Ensure the directory exists
-            poly_features_path = self.config.poly_features_path
-            poly_features_path.parent.mkdir(parents=True, exist_ok=True)
-
-            # Save polynomial features for later use
-            joblib.dump(poly, poly_features_path)
-
-            # Scaling
-            if self.config.scaling_method == "StandardScaler":
-                scaler = StandardScaler()
-            else:
-                raise ValueError(f"Unknown scaling method: {self.config.scaling_method}")
-
-            X_train_scaled = scaler.fit_transform(X_train_poly)
-            X_test_scaled = scaler.transform(X_test_poly)
-
-            return X_train_scaled, y_train, X_test_scaled, y_test
-        except PermissionError as e:
-            logger.error(f"Permission denied: {e}")
-            raise e
-        except Exception as e:
-            logger.error(f"Error preprocessing data: {e}")
-            raise e
-
-    def evaluate_models(self, X_train, y_train):
-        try:
-            models = self.config.models
-            performance_metrics = {}
-
-            for model_name, model_params in models.items():
-                logger.info(f"Training {model_name}...")
-                if model_name == "ridge":
-                    model = Ridge(**model_params)
-                elif model_name == "elasticnet":
-                    model = ElasticNet(**model_params)
-                elif model_name == "bayesian_ridge":
-                    model = BayesianRidge(**model_params)
-                elif model_name == "huber_regressor":
-                    model = HuberRegressor(**model_params)
-                elif model_name == "random_forest":
-                    model = RandomForestRegressor(**model_params)
-                elif model_name == "gradient_boosting":
-                    model = GradientBoostingRegressor(**model_params)
-                elif model_name == "svr":
-                    model = SVR(**model_params)
-                elif model_name == "xgboost":
-                    model = XGBRegressor(**model_params)
-                else:
-                    raise ValueError(f"Unknown model: {model_name}")
-
-                model.fit(X_train, y_train)
-                y_pred_train = model.predict(X_train)
-
-                mae = mean_absolute_error(y_train, y_pred_train)
-                rmse = mean_squared_error(y_train, y_pred_train, squared=False)
-                r2 = r2_score(y_train, y_pred_train)
-                mape = mean_absolute_percentage_error(y_train, y_pred_train)
-                medae = median_absolute_error(y_train, y_pred_train)
-
-                performance_metrics[model_name] = {
-                    "MAE": mae,
-                    "RMSE": rmse,
-                    "R2": r2,
-                    "MAPE": mape,
-                    "MedAE": medae
-                }
-                logger.info(f"{model_name} - MAE: {mae}")
-
-            # Visualization: Performance Metrics
-            self.visualize_performance(performance_metrics, test=False)
-            return performance_metrics
-        except Exception as e:
-            logger.error(f"Error evaluating models: {e}")
-            raise e
-
-    def hyperparameter_tuning(self, X_train, y_train):
-        try:
-            best_models = {}
-
-            for model_name, param_grid in self.config.param_grids.items():
-                if model_name == "ridge":
-                    model = Ridge()
-                elif model_name == "elasticnet":
-                    model = ElasticNet()
-                elif model_name == "huber_regressor":
-                    model = HuberRegressor()
-                elif model_name == "svr":
-                    model = SVR()
-                elif model_name == "random_forest":
-                    model = RandomForestRegressor()
-                elif model_name == "gradient_boosting":
-                    model = GradientBoostingRegressor()
-                elif model_name == "xgboost":
-                    model = XGBRegressor()
-                else:
-                    raise ValueError(f"Unknown model: {model_name}")
-
-                grid_search = GridSearchCV(estimator=model, param_grid=param_grid, cv=self.config.cv, scoring=self.config.scoring, n_jobs=-1)
-                logger.info(f"Tuning {model_name}...")
-                grid_search.fit(X_train, y_train)
-                best_models[model_name] = grid_search.best_estimator_
-                logger.info(f"Best parameters for {model_name}: {grid_search.best_params_}")
-
-            return best_models
-        except Exception as e:
-            logger.error(f"Error during hyperparameter tuning: {e}")
-            raise e
-
-    def evaluate_best_models(self, best_models, X_test, y_test):
-        try:
-            performance_metrics = {}
-
-            for model_name, model in best_models.items():
-                y_pred_test = model.predict(X_test)
-
-                mae = mean_absolute_error(y_test, y_pred_test)
-                rmse = mean_squared_error(y_test, y_pred_test, squared=False)
-                r2 = r2_score(y_test, y_pred_test)
-                mape = mean_absolute_percentage_error(y_test, y_pred_test)
-                medae = median_absolute_error(y_test, y_pred_test)
-
-                performance_metrics[model_name] = {
-                    "MAE": mae,
-                    "RMSE": rmse,
-                    "R2": r2,
-                    "MAPE": mape,
-                    "MedAE": medae
-                }
-                logger.info(f"{model_name} - Test MAE: {mae}, RMSE: {rmse}, R2: {r2}, MAPE: {mape}, MedAE: {medae}")
-
-            # Visualization: Best Model Performance
-            self.visualize_performance(performance_metrics, test=True)
-            return performance_metrics
-        except Exception as e:
-            logger.error(f"Error evaluating best models: {e}")
-            raise e
-
-    def save_models(self, best_models):
-        try:
-            for model_name, model in best_models.items():
-                model_save_path = self.config.model_path / f"{model_name}.joblib"
-                model_save_path.parent.mkdir(parents=True, exist_ok=True)
-                joblib.dump(model, model_save_path)
-                logger.info(f"Saved {model_name} model at: {model_save_path}")
-
-            # Save the best models for 'sa' and 'cv' with the expected filenames
-            best_model_sa = best_models.get(self.config.sa_model_name)
-            best_model_cv = best_models.get(self.config.cv_model_name)
-
-            if best_model_sa:
-                joblib.dump(best_model_sa, self.config.model_path / 'best_model_sa.joblib')
-                logger.info("Saved best model for Surface Roughness (Sa) at: artifacts/model_trainer/models/best_model_sa.joblib")
-
-            if best_model_cv:
-                joblib.dump(best_model_cv, self.config.model_path / 'best_model_cv.joblib')
-                logger.info("Saved best model for Cell Viability (CV) at: artifacts/model_trainer/models/best_model_cv.joblib")
-
-            # Save polynomial features
-            joblib.dump(self.poly, self.config.poly_features_path)
-            logger.info("Saved polynomial features at: artifacts/model_trainer/poly_features.joblib")
-
-        except Exception as e:
-            logger.error(f"Error saving model {model_name}: {e}")
-            raise e
-
-    def visualize_performance(self, performance_metrics, test=False):
-        try:
-            metric_df = pd.DataFrame(performance_metrics).T
-            metric_df = metric_df[['MAE', 'RMSE', 'R2', 'MAPE', 'MedAE']]
-
-            if test:
-                title = 'Test Set Performance'
-            else:
-                title = 'Training Set Performance'
-
-            plt.figure(figsize=(12, 8))
-            sns.barplot(data=metric_df.reset_index().melt(id_vars='index'), x='index', y='value', hue='variable', palette="Set2")
-            plt.title(title)
-            plt.xlabel('Models')
-            plt.ylabel('Score')
-            plt.legend(loc='upper right')
-            plt.show()
-        except Exception as e:
-            logger.error(f"Error visualizing performance: {e}")
-            raise e
+        plt.figure(figsize=(12, 6))
+        sns.histplot(y_test - y_pred, kde=True, bins=30, color='blue')
+        plt.title(f"Error Distribution for {model_name}")
+        plt.xlabel("Error")
+        plt.tight_layout()
+        plt.show()
 
     def execute(self):
         try:
-            X_train, y_train, X_test, y_test = self.load_data()
-            X_train, y_train, X_test, y_test = self.preprocess_data(X_train, y_train, X_test, y_test)
-            model_performance = self.evaluate_models(X_train, y_train)
-            performance_df = pd.DataFrame(model_performance).T
-            print("\nModel Performance:\n", performance_df)
+            # Load the data
+            (X_train_sa, y_train_sa, X_test_sa, y_test_sa), (X_train_cv, y_train_cv, X_test_cv, y_test_cv) = self.load_data()
 
-            best_models = self.hyperparameter_tuning(X_train, y_train)
-            performance_metrics = self.evaluate_best_models(best_models, X_test, y_test)
+            # Model training for Surface Roughness (Sa)
+            sa_performance = self.train_models(X_train_sa, y_train_sa, X_test_sa, y_test_sa, "Sa")
 
-            best_hyperparameters = {model_name: model.get_params() for model_name, model in best_models.items()}
-            print("\nBest Hyperparameters:\n", best_hyperparameters)
-            print("\nPerformance Metrics:\n", performance_metrics)
+            # Model training for Cell Viability (CV)
+            cv_performance = self.train_models(X_train_cv, y_train_cv, X_test_cv, y_test_cv, "CV")
 
-            self.save_models(best_models)
+            # Visualize results for Surface Roughness (Sa)
+            for model_name in sa_performance:
+                y_pred_sa = joblib.load(self.config.root_dir / f"{model_name}_Sa.joblib").predict(X_test_sa)
+                self.visualize_results(y_test_sa, y_pred_sa, model_name)
+
+            # Visualize results for Cell Viability (CV)
+            for model_name in cv_performance:
+                y_pred_cv = joblib.load(self.config.root_dir / f"{model_name}_CV.joblib").predict(X_test_cv)
+                self.visualize_results(y_test_cv, y_pred_cv, model_name)
+
+            # Hyperparameter tuning for each model
+            best_rf_model_sa = self.hyperparameter_tuning(X_train_sa, y_train_sa, "RandomForest")
+            best_rf_model_cv = self.hyperparameter_tuning(X_train_cv, y_train_cv, "BaggingRF")
+            best_ridge_model_sa = self.hyperparameter_tuning(X_train_sa, y_train_sa, "Ridge")
+
+            # Save the best models after hyperparameter tuning
+            joblib.dump(best_rf_model_sa, self.config.root_dir / "best_rf_model_sa.joblib")
+            joblib.dump(best_rf_model_cv, self.config.root_dir / "best_rf_model_cv.joblib")
+            joblib.dump(best_ridge_model_sa, self.config.root_dir / "best_ridge_model_sa.joblib")
+
+            logger.info("Model training, hyperparameter tuning, and visualizations completed successfully.")
+
         except Exception as e:
-            logger.exception(e)
+            logger.exception(f"Error during model training execution: {e}")
             raise e

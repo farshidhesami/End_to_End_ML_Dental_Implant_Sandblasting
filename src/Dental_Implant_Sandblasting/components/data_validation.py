@@ -7,7 +7,6 @@ from sklearn.impute import KNNImputer
 from Dental_Implant_Sandblasting import logger
 from Dental_Implant_Sandblasting.entity.config_entity import DataValidationConfig
 
-
 ### Class for validating and preprocessing the data:
 class DataValidation:
     def __init__(self, config: DataValidationConfig):
@@ -117,4 +116,3 @@ class DataValidation:
         except Exception as e:
             logger.exception(f"Error during data preprocessing: {e}")
             raise e
-

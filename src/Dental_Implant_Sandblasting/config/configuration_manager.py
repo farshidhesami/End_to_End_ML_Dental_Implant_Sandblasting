@@ -5,7 +5,9 @@ from Dental_Implant_Sandblasting.utils.common import read_yaml, create_directori
 from Dental_Implant_Sandblasting.entity.config_entity import (
     DataIngestionConfig,
     DataValidationConfig,
-    DataTransformationConfig
+    DataTransformationConfig,
+    ModelTrainerConfig,
+    ModelEvaluationConfig  # Added ModelEvaluationConfig import
 )
 
 # Define Configuration Manager
@@ -26,7 +28,6 @@ class ConfigurationManager:
 
     # Fetch Data Ingestion Config
     def get_data_ingestion_config(self) -> DataIngestionConfig:
-        # Extracting ingestion configurations
         config = self.config['data_ingestion']
         params = self.params['data_ingestion']
 
@@ -52,58 +53,29 @@ class ConfigurationManager:
 
     # Fetch Data Validation Config
     def get_data_validation_config(self) -> DataValidationConfig:
-        # Extracting validation configurations and parameters
         config = self.config['data_validation']
-        params = self.params['data_validation']                               # Fetching validation-related params
-        schema = {**self.schema['COLUMNS'], **self.schema['TARGET_COLUMNS']}  # Combining schema columns
-
-        # Create the root directory for data validation artifacts
+        schema = {**self.schema['COLUMNS'], **self.schema['TARGET_COLUMNS']}
         create_directories([config['root_dir']])
 
         data_validation_config = DataValidationConfig(
             root_dir=Path(config['root_dir']),
-            unzip_data_dir=Path(config['unzip_data_dir']),                    # Updated to include the CSV path
+            unzip_data_dir=Path(config['unzip_data_dir']),
             STATUS_FILE=Path(config['STATUS_FILE']),
             all_schema=schema,
-            columns_to_convert=config['columns_to_convert'],
-            knn_n_neighbors=params['knn_n_neighbors'],
-            sa_lower_bound=params['sa_lower_bound'],
-            sa_upper_bound=params['sa_upper_bound'],
+            columns_to_convert=self.config['data_ingestion']['columns_to_convert'],
+            knn_n_neighbors=config['knn_n_neighbors'],
+            sa_lower_bound=config['sa_lower_bound'],
+            sa_upper_bound=config['sa_upper_bound'],
             feature_columns=config['feature_columns'],
             target_column_sa=config['target_column_sa'],
             target_column_cv=config['target_column_cv'],
-            test_size=params['test_size'],
-            random_state=params['random_state']
+            test_size=self.params['data_validation']['test_size'],
+            random_state=self.params['data_validation']['random_state']
         )
-
         return data_validation_config
 
     # Fetch Data Transformation Config
     def get_data_transformation_config(self) -> DataTransformationConfig:
-        # Extracting transformation configurations and parameters
-        config = self.config['data_transformation']
-        params = self.params['data_transformation']
-
-        # Create the root directory for data transformation artifacts
-        create_directories([config['root_dir']])
-
-        data_transformation_config = DataTransformationConfig(
-            root_dir=Path(config['root_dir']),
-            data_path=Path(config['data_path']),
-            transformed_train_dir=Path(config['transformed_train_path']),
-            transformed_test_dir=Path(config['transformed_test_path']),
-            test_size=params['test_size'],
-            random_state=params['random_state'],
-            polynomial_features_degree=params['polynomial_features_degree'],
-            scaling_method=params['scaling_method'],
-            lasso_max_iter=params['lasso_max_iter']
-        )
-
-        return data_transformation_config
-
-    # Fetch Data Transformation Config
-    def get_data_transformation_config(self) -> DataTransformationConfig:
-        # Extracting transformation configurations and parameters
         config = self.config['data_transformation']
         params = self.params['data_transformation']
 
@@ -124,3 +96,50 @@ class ConfigurationManager:
         )
 
         return data_transformation_config
+
+    # Fetch Model Trainer Config
+    def get_model_trainer_config(self) -> ModelTrainerConfig:
+        config = self.config['model_trainer']
+        params = self.params['model_training']
+
+        model_trainer_config = ModelTrainerConfig(
+            root_dir=Path(config['root_dir']),
+            transformed_train_dir=Path(config['transformed_train_dir']),
+            transformed_test_dir=Path(config['transformed_test_dir']),
+            test_size=params['test_size'],
+            random_state=params['random_state'],
+            param_grid_rf=params['param_grid_rf'],
+            param_grid_bagging=params['param_grid_bagging'],
+            param_grid_ridge=params['param_grid_ridge'],
+            models=params['models'],
+            n_iter=params['n_iter'],
+            cv=params['cv'],
+            verbose=params['verbose'],
+            n_jobs=params['n_jobs']
+        )
+        return model_trainer_config
+
+    # Fetch Model Evaluation Config
+    def get_model_evaluation_config(self) -> ModelEvaluationConfig:
+        config = self.config['model_evaluation']
+        params = self.params['model_evaluation']
+        
+        create_directories([config['root_dir']])
+
+        model_evaluation_config = ModelEvaluationConfig(
+            root_dir=Path(config['root_dir']),
+            model_dir=Path(config['model_dir']),
+            test_sa_data=Path(config['test_sa_data']),
+            test_cv_data=Path(config['test_cv_data']),
+            n_estimators_rf=params['n_estimators_rf'],
+            max_depth_rf=params['max_depth_rf'],
+            min_samples_split_rf=params['min_samples_split_rf'],
+            min_samples_leaf_rf=params['min_samples_leaf_rf'],
+            bootstrap_rf=params['bootstrap_rf'],
+            alpha_ridge=params['alpha_ridge'],
+            n_estimators_bagging=params['n_estimators_bagging'],
+            max_samples_bagging=params['max_samples_bagging'],
+            max_features_bagging=params['max_features_bagging'],
+            random_state=params['random_state']
+        )
+        return model_evaluation_config
