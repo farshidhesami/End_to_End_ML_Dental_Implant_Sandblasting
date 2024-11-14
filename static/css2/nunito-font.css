@@ -1,0 +1,34 @@
+/* nunito-font.css */
+
+/* Import Nunito font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap');
+
+/* 
+ * Apply Nunito as the default font-family across the entire site.
+ * Fallback fonts: Arial, sans-serif for better cross-browser consistency.
+ */
+body {
+    font-family: 'Nunito', Arial, sans-serif;
+}
+
+/* Classes for various font weights */
+/* Usage example: <p class="medium-font">This is medium weight text.</p> */
+.light-font {
+    font-weight: 300;
+}
+
+.regular-font {
+    font-weight: 400;
+}
+
+.medium-font {
+    font-weight: 600;
+}
+
+.bold-font {
+    font-weight: 700;
+}
+
+.extra-bold-font {
+    font-weight: 800;
+}
