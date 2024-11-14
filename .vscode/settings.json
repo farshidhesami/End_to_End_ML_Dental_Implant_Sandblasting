@@ -47,6 +47,7 @@
         "multicollinearity",
         "normaltest",
         "numpy",
+        "nunito",
         "osseointegration",
         "overfitting",
         "pairplot",
