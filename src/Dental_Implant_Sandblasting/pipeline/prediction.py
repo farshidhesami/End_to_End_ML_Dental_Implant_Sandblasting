@@ -27,12 +27,18 @@ class PredictionPipeline:
     def preprocess_input_data(self, input_data: pd.DataFrame) -> pd.DataFrame:
         """Apply necessary preprocessing to input data (e.g., scaling, feature engineering)."""
         try:
-            # Example: Apply scaling, polynomial features, or any transformation used in training
-            # This should align with the transformations applied during model training.
-            # Here you would add steps like handling missing values, scaling, or transforming features.
-            # Example (adjust based on your training process):
-            # input_data = self.apply_scaling(input_data)
-            # input_data = self.apply_polynomial_features(input_data)
+            # Only select relevant features to match the expected input format for the model
+            expected_features = [
+                'angle_sandblasting', 
+                'pressure_sandblasting_bar', 
+                'temperature_acid_etching', 
+                'time_acid_etching_min', 
+                'voltage_anodizing_v'
+            ]
+            input_data = input_data[expected_features]
+
+            # Rename columns to match the unnamed format expected by the trained model
+            input_data.columns = range(input_data.shape[1])
 
             logger.info("Input data preprocessed successfully.")
             return input_data
