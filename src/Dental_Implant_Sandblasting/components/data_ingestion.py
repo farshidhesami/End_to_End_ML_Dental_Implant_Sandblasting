@@ -68,13 +68,13 @@ class DataIngestion:
     # Method to perform basic EDA plots
     def basic_eda_plots(self, data):
         plt.figure(figsize=(8, 6))
-        sns.countplot(x='Result (1=Passed, 0=Failed)', data=data)
+        sns.countplot(x='Result_Passed_1_Failed_0', data=data)
         plt.title("Counts of Result (1=Passed, 0=Failed)")
         plt.xlabel("Result")
         plt.ylabel("Count")
         plt.show()
 
-        result_counts = data['Result (1=Passed, 0=Failed)'].value_counts()
+        result_counts = data['Result_Passed_1_Failed_0'].value_counts()
         plt.figure(figsize=(8, 6))
         plt.pie(result_counts, labels=result_counts.index, autopct='%1.1f%%', startangle=140)
         plt.title("Distribution of Results (1=Passed, 0=Failed)")
@@ -83,20 +83,20 @@ class DataIngestion:
 
         plt.figure(figsize=(12, 6))
         plt.subplot(1, 2, 1)
-        sns.boxplot(y='(Sa) Average of Surface roughness (micrometer)', data=data)
+        sns.boxplot(y='sa_surface_roughness_micrometer', data=data)
         plt.title("Distribution of Surface Roughness (Sa)")
         plt.ylabel("Surface Roughness (Sa) (µm)")
 
         plt.subplot(1, 2, 2)
-        sns.boxplot(y='Cell Viability (%)', data=data)
+        sns.boxplot(y='cell_viability_percent', data=data)
         plt.title("Distribution of Cell Viability (%)")
         plt.ylabel("Cell Viability (%)")
         plt.tight_layout()
         plt.show()
 
         plt.figure(figsize=(8, 6))
-        sns.scatterplot(x=data['(Sa) Average of Surface roughness (micrometer)'], 
-                        y=data['Cell Viability (%)'], hue=data['Result (1=Passed, 0=Failed)'])
+        sns.scatterplot(x='sa_surface_roughness_micrometer', 
+                        y='cell_viability_percent', hue='Result_Passed_1_Failed_0', data=data)
         plt.title("Surface Roughness (Sa) vs Cell Viability (%)")
         plt.xlabel("Surface Roughness (Sa) (µm)")
         plt.ylabel("Cell Viability (%)")

@@ -46,6 +46,7 @@ model_trainer:
   sa_model_name: best_rf_model_sa.joblib  # Random Forest model for Surface Roughness
   cv_model_name: best_rf_model_cv.joblib  # Bagging model for Cell Viability
   ridge_model_name: best_ridge_model_sa.joblib  # Ridge model for Surface Roughness
+  knn_n_neighbors: 5  # Default number of neighbors for KNN model
 
 # Root directory for 05_model_evaluation artifacts
 model_evaluation:

@@ -114,6 +114,13 @@ body {
   outline: none;
 }
 
+/* Enhanced Mobile Input Padding */
+@media (max-width: 576px) {
+  .form-row .input-text {
+    padding: 14px 16px;
+  }
+}
+
 .form-row-total {
   display: flex;
   justify-content: space-between;
@@ -128,6 +135,7 @@ body {
   text-align: center;
 }
 
+/* Register Button with Animation */
 .form-row-last .register {
   background-color: #0062cc;
   color: #ffffff;
@@ -137,11 +145,12 @@ body {
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.2s ease-in-out;
 }
 
 .form-row-last .register:hover {
   background-color: #004a99;
+  transform: scale(1.05);
 }
 
 /* Button Styling */
@@ -185,7 +194,7 @@ button:focus, .btn:focus {
   color: #ccc;
   padding: 30px 0;
   text-align: center;
-  font-size: 1rem; /* Increased from 0.875rem for readability */
+  font-size: 1rem;
 }
 
 .footer a {
@@ -193,8 +202,9 @@ button:focus, .btn:focus {
   transition: color 0.2s;
 }
 
-.footer a:hover {
+.footer a:hover, .footer a:focus {
   color: #ffffff;
+  outline: none; /* Prevent duplicate focus ring */
 }
 
 .footer .fa-stack {

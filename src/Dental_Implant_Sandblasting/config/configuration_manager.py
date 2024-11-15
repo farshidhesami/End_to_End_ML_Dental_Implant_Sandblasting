@@ -40,13 +40,13 @@ class ConfigurationManager:
             local_data_file=Path(config['local_data_file']),
             unzip_dir=Path(config['unzip_dir']),
             columns_to_convert=config["columns_to_convert"],
-            sa_lower_bound=params["sa_lower_bound"],
-            sa_upper_bound=params["sa_upper_bound"],
-            cell_viability_threshold=params["cell_viability_threshold"],
-            outlier_capping_method=params["outlier_capping_method"],
-            outlier_tail=params["outlier_tail"],
-            outlier_fold=params["outlier_fold"],
-            log_transform_variable=params["log_transform_variable"]
+            sa_lower_bound=params.get("sa_lower_bound"),
+            sa_upper_bound=params.get("sa_upper_bound"),
+            cell_viability_threshold=params.get("cell_viability_threshold"),
+            outlier_capping_method=params.get("outlier_capping_method"),
+            outlier_tail=params.get("outlier_tail"),
+            outlier_fold=params.get("outlier_fold"),
+            log_transform_variable=params.get("log_transform_variable")
         )
 
         return data_ingestion_config
@@ -63,9 +63,9 @@ class ConfigurationManager:
             STATUS_FILE=Path(config['STATUS_FILE']),
             all_schema=schema,
             columns_to_convert=self.config['data_ingestion']['columns_to_convert'],
-            knn_n_neighbors=config['knn_n_neighbors'],
-            sa_lower_bound=config['sa_lower_bound'],
-            sa_upper_bound=config['sa_upper_bound'],
+            knn_n_neighbors=self.params.get('knn_n_neighbors', 5),  # Default to 5 if not present
+            sa_lower_bound=self.params.get('sa_lower_bound'),
+            sa_upper_bound=self.params.get('sa_upper_bound'),
             feature_columns=config['feature_columns'],
             target_column_sa=config['target_column_sa'],
             target_column_cv=config['target_column_cv'],
@@ -92,7 +92,7 @@ class ConfigurationManager:
             polynomial_features_degree=params['polynomial_features_degree'],
             scaling_method=params['scaling_method'],
             lasso_max_iter=params['lasso_max_iter'],
-            knn_n_neighbors=params['knn_n_neighbors']
+            knn_n_neighbors=params.get('knn_n_neighbors', 5)  # Default to 5 if not present
         )
 
         return data_transformation_config
