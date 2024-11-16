@@ -2,7 +2,7 @@
 
 // Wait for the document to fully load
 document.addEventListener("DOMContentLoaded", function () {
-    // Navbar - Highlight active links
+    // Highlight active links in the navbar
     const navbarLinks = document.querySelectorAll(".navbar-nav .nav-link");
     navbarLinks.forEach(link => {
         if (link.href === window.location.href) {
@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Smooth scrolling for anchor links
+    // Enable smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener("click", function (e) {
             e.preventDefault();
@@ -22,20 +22,20 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Form Validation on Submit
+    // Form validation on submit
     const form = document.querySelector(".form-detail");
     if (form) {
         form.addEventListener("submit", function (event) {
             event.preventDefault();
             const isValid = validateForm(form);
             if (isValid) {
-                showLoading(event.submitter); // Show loading animation
-                form.submit(); // Proceed with form submission if valid
+                showLoading(event.submitter); // Show loading spinner
+                form.submit(); // Submit the form
             }
         });
     }
 
-    // Hover effect for social media icons in the footer
+    // Hover effect for social media icons
     const socialIcons = document.querySelectorAll(".footer .fa-stack");
     socialIcons.forEach(icon => {
         icon.addEventListener("mouseover", () => icon.style.color = "#ffffff");
@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-// Validate the form fields before submitting
+// Validate form fields before submission
 function validateForm(form) {
     const fields = form.querySelectorAll(".input-text");
     let isValid = true;
@@ -63,7 +63,7 @@ function validateForm(form) {
     return isValid;
 }
 
-// Show error message below the input field
+// Display validation error message
 function showValidationError(field, message) {
     clearValidationError(field);
 
@@ -74,7 +74,7 @@ function showValidationError(field, message) {
     field.parentElement.appendChild(error);
 }
 
-// Clear any existing error messages
+// Clear existing validation error messages
 function clearValidationError(field) {
     const existingError = field.parentElement.querySelector(".validation-error");
     if (existingError) {
@@ -82,23 +82,13 @@ function clearValidationError(field) {
     }
 }
 
-// Display loading animation on form submit
+// Show loading spinner on submit button
 function showLoading(button) {
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 }
 
-// Handle submission feedback for training or prediction
-function handleSubmission(event, buttonId) {
-    event.preventDefault();
-    const button = document.getElementById(buttonId);
-    if (button) {
-        showLoading(button);
-    }
-    // Optional: AJAX submission can be added here to handle without page reload
-}
-
-// AJAX for dynamic prediction results display (Optional)
+// Optional: Handle AJAX submission dynamically
 async function submitPredictionForm(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
@@ -120,7 +110,7 @@ async function submitPredictionForm(event) {
     }
 }
 
-// Display prediction results
+// Display prediction result dynamically
 function displayPredictionResult(result) {
     const resultContainer = document.querySelector(".prediction-box");
     if (resultContainer) {
@@ -129,7 +119,7 @@ function displayPredictionResult(result) {
     }
 }
 
-// Display error message for predictions
+// Display error message
 function displayError(message) {
     const resultContainer = document.querySelector(".prediction-box");
     if (resultContainer) {
