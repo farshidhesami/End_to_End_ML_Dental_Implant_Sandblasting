@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, jsonify
-import subprocess
+from flask import Flask, render_template, request, jsonify, send_file
 import pandas as pd
-from Dental_Implant_Sandblasting.pipeline.prediction import PredictionPipeline
 import os
 import logging
+import seaborn as sns
+import matplotlib.pyplot as plt
+from Dental_Implant_Sandblasting.pipeline.prediction import PredictionPipeline
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -57,7 +58,10 @@ def predict():
                 value = float(request.form.get(feature, 0))
             except ValueError:
                 logger.error(f"Invalid input for feature: {feature}")
-                return jsonify({"message": f"Invalid input for feature: {feature}"}), 400
+                return render_template(
+                    'index.html',
+                    error_message=f"Invalid input for feature: {feature}. Please provide a valid number."
+                )
             data.append(value)
 
         # Convert the data into a DataFrame with column names
@@ -69,11 +73,59 @@ def predict():
 
         logger.info(f"Prediction results: {predictions}")
 
-        # Render the results page with predictions
-        return render_template('results.html', predictions=predictions)
+        # Create a correlation heatmap
+        corr_matrix = data_df.corr()
+        corr_file_path = "static/img/correlation_heatmap.png"
+        os.makedirs("static/img", exist_ok=True)
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", cbar=True)
+        plt.title("Correlation Heatmap")
+        plt.savefig(corr_file_path)
+        plt.close()
+
+        # Render the results page with predictions, passing individual values for visualization
+        return render_template(
+            'results.html',
+            sa_rf=predictions['sa_predictions_rf'][0],
+            sa_ridge=predictions['sa_predictions_ridge'][0],
+            cv_bagging=predictions['cv_predictions_bagging'][0],
+            benchmark_sa=0.5,  # Example benchmark
+            benchmark_cv=0.7,  # Example benchmark
+            correlation_heatmap_path=corr_file_path,
+            distribution_sa=[0.2, 0.4, 0.6],  # Placeholder distribution data
+            distribution_cv=[0.1, 0.3, 0.5]  # Placeholder distribution data
+        )
     except Exception as e:
         logger.exception("An error occurred during prediction.")
-        return jsonify({"message": "An error occurred during prediction", "error": str(e)}), 500
+        return render_template(
+            'index.html',
+            error_message="An error occurred during prediction. Please try again or contact support."
+        )
+
+# Route for downloading reports
+@app.route('/download_report', methods=['GET'])
+def download_report():
+    """Generate and serve a downloadable report."""
+    try:
+        # Example report data
+        report_data = {
+            "Metric": ["Surface Roughness (Sa)", "Cell Viability (CV)"],
+            "RF Prediction": [0.24, 0.039],  # Example placeholders
+            "Ridge Prediction (Sa)": [0.95, None],
+            "Benchmark": [0.5, 0.7]
+        }
+        report_df = pd.DataFrame(report_data)
+
+        # Save report to an Excel file
+        report_path = "artifacts/prediction_report.xlsx"
+        os.makedirs("artifacts", exist_ok=True)  # Ensure the directory exists
+        report_df.to_excel(report_path, index=False)
+
+        # Send file to user
+        return send_file(report_path, as_attachment=True)
+    except Exception as e:
+        logger.exception("Failed to generate report.")
+        return jsonify({"message": "Failed to generate report", "error": str(e)}), 500
 
 if __name__ == "__main__":
     # Start the Flask app on port 8080, with debug mode enabled for development

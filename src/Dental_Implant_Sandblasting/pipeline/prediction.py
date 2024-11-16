@@ -4,14 +4,18 @@ from Dental_Implant_Sandblasting import logger
 import joblib
 import pandas as pd
 from pathlib import Path
-import numpy as np
+
 
 class PredictionPipeline:
     def __init__(self):
         """Initialize the PredictionPipeline with configuration and model loading."""
-        config_manager = ConfigurationManager()
-        self.config = config_manager.get_model_evaluation_config()
-        self.load_models()
+        try:
+            config_manager = ConfigurationManager()
+            self.config = config_manager.get_model_evaluation_config()
+            self.load_models()
+        except Exception as e:
+            logger.exception("Error during initialization.")
+            raise e
 
     def load_models(self):
         """Load pre-trained models for Sa and CV predictions."""
@@ -20,6 +24,9 @@ class PredictionPipeline:
             self.ridge_model_sa = joblib.load(self.config.model_dir / "best_ridge_model_sa.joblib")
             self.bagging_model_cv = joblib.load(self.config.model_dir / "best_rf_model_cv.joblib")
             logger.info("Models loaded successfully.")
+        except FileNotFoundError as fnf_error:
+            logger.error("One or more model files are missing. Ensure all models are saved in the specified directory.")
+            raise fnf_error
         except Exception as e:
             logger.exception("Error loading models.")
             raise e
@@ -27,21 +34,31 @@ class PredictionPipeline:
     def preprocess_input_data(self, input_data: pd.DataFrame) -> pd.DataFrame:
         """Apply necessary preprocessing to input data (e.g., scaling, feature engineering)."""
         try:
-            # Only select relevant features to match the expected input format for the model
+            # Define the expected features
             expected_features = [
-                'angle_sandblasting', 
-                'pressure_sandblasting_bar', 
-                'temperature_acid_etching', 
-                'time_acid_etching_min', 
+                'angle_sandblasting',
+                'pressure_sandblasting_bar',
+                'temperature_acid_etching',
+                'time_acid_etching_min',
                 'voltage_anodizing_v'
             ]
+
+            # Validate and select only the expected features
+            missing_features = set(expected_features) - set(input_data.columns)
+            if missing_features:
+                raise ValueError(f"Missing required features: {missing_features}")
+
+            # Ensure the input only contains the expected features
             input_data = input_data[expected_features]
 
-            # Rename columns to match the unnamed format expected by the trained model
+            # Rename columns to match the model's expected format (e.g., unnamed)
             input_data.columns = range(input_data.shape[1])
 
             logger.info("Input data preprocessed successfully.")
             return input_data
+        except KeyError as key_error:
+            logger.error(f"Input data missing required columns: {key_error}")
+            raise key_error
         except Exception as e:
             logger.exception("Error during data preprocessing.")
             raise e
@@ -52,13 +69,12 @@ class PredictionPipeline:
             # Preprocess the input data
             processed_data = self.preprocess_input_data(input_data)
 
-            # Predictions for Surface Roughness (Sa)
+            # Generate predictions
             y_sa_pred_rf = self.rf_model_sa.predict(processed_data)
             y_sa_pred_ridge = self.ridge_model_sa.predict(processed_data)
-
-            # Predictions for Cell Viability (CV)
             y_cv_pred_bagging = self.bagging_model_cv.predict(processed_data)
 
+            # Create a dictionary for predictions
             predictions = {
                 "sa_predictions_rf": y_sa_pred_rf.tolist(),
                 "sa_predictions_ridge": y_sa_pred_ridge.tolist(),
@@ -67,6 +83,9 @@ class PredictionPipeline:
 
             logger.info("Predictions generated successfully.")
             return predictions
+        except ValueError as value_error:
+            logger.error(f"Prediction error due to data validation: {value_error}")
+            raise value_error
         except Exception as e:
             logger.exception("Error during prediction.")
             raise e
@@ -76,6 +95,9 @@ class PredictionPipeline:
         try:
             save_json(output_path, predictions)
             logger.info(f"Predictions saved to {output_path}")
+        except PermissionError as perm_error:
+            logger.error(f"Permission denied while saving predictions: {perm_error}")
+            raise perm_error
         except Exception as e:
             logger.exception("Error saving predictions.")
             raise e
@@ -84,7 +106,7 @@ class PredictionPipeline:
         """Main method to execute the prediction pipeline."""
         try:
             # Load input data
-            input_data = load_data(input_data_path)  # Assuming load_data is a utility to read CSVs
+            input_data = load_data(input_data_path)
             logger.info(f"Input data loaded from {input_data_path}")
 
             # Generate predictions
@@ -92,17 +114,21 @@ class PredictionPipeline:
 
             # Save predictions
             self.save_predictions(predictions, output_path)
+        except FileNotFoundError as fnf_error:
+            logger.error(f"Input file not found: {fnf_error}")
+            raise fnf_error
         except Exception as e:
             logger.exception("Error executing prediction pipeline.")
             raise e
+
 
 if __name__ == "__main__":
     try:
         STAGE_NAME = "Prediction Stage"
         logger.info(f">>>>>> Stage {STAGE_NAME} started <<<<<<")
 
-        # Example usage:
-        input_data_path = Path("path/to/your/input_data.csv")  # Update this to your input data path
+        # Example usage
+        input_data_path = Path("path/to/your/input_data.csv")  # Update this path
         output_path = Path("artifacts/predictions/prediction_results.json")
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -111,5 +137,5 @@ if __name__ == "__main__":
 
         logger.info(f">>>>>> Stage {STAGE_NAME} completed <<<<<<\n\nx==========x")
     except Exception as e:
-        logger.exception(e)
+        logger.exception("Unhandled exception in the main execution block.")
         raise e
